@@ -247,7 +247,7 @@ export const useEmployeeManager = () => {
   };
 
   // Editar funcionário existente
-  const updateEmployee = (id: string, employeeData: EmployeeFormData): boolean => {
+  const updateEmployee = async (id: string, employeeData: EmployeeFormData): Promise<boolean> => {
     try {
       const index = employees.findIndex(emp => emp.id === id);
       if (index === -1) {
@@ -274,23 +274,36 @@ export const useEmployeeManager = () => {
         }
       }
 
-      const updatedEmployees = [...employees];
-      updatedEmployees[index] = {
-        ...updatedEmployees[index],
-        ...employeeData,
-        lunchTime: employeeData.lunchTime || undefined,
-      };
-
-      saveEmployees(updatedEmployees);
-
-      toast({
-        title: "✅ Funcionário Atualizado",
-        description: `${employeeData.name} foi atualizado com sucesso.`,
-      });
+      if (isSupabaseConnected) {
+        // Atualizar no Supabase
+        const updatedEmployee = await supabaseService.updateEmployee(id, employeeData);
+        const updatedEmployees = [...employees];
+        updatedEmployees[index] = updatedEmployee;
+        await saveEmployees(updatedEmployees);
+        
+        toast({
+          title: "✅ Funcionário Atualizado",
+          description: `${employeeData.name} foi atualizado com sucesso no Supabase.`,
+        });
+      } else {
+        // Modo offline - atualizar apenas localmente
+        const updatedEmployees = [...employees];
+        updatedEmployees[index] = {
+          ...updatedEmployees[index],
+          ...employeeData,
+          lunchTime: employeeData.lunchTime || undefined,
+        };
+        await saveEmployees(updatedEmployees);
+        
+        toast({
+          title: "✅ Funcionário Atualizado (Offline)",
+          description: `${employeeData.name} foi atualizado localmente.`,
+        });
+      }
 
       return true;
     } catch (error) {
-      console.error('Erro ao atualizar funcionário:', error);
+      console.error('❌ Erro ao atualizar funcionário:', error);
       toast({
         title: "❌ Erro ao Atualizar",
         description: "Não foi possível atualizar o funcionário.",
@@ -301,7 +314,7 @@ export const useEmployeeManager = () => {
   };
 
   // Remover funcionário
-  const removeEmployee = (id: string): boolean => {
+  const removeEmployee = async (id: string): Promise<boolean> => {
     try {
       const employeeToRemove = employees.find(emp => emp.id === id);
       if (!employeeToRemove) {
@@ -313,17 +326,30 @@ export const useEmployeeManager = () => {
         return false;
       }
 
-      const updatedEmployees = employees.filter(emp => emp.id !== id);
-      saveEmployees(updatedEmployees);
-
-      toast({
-        title: "✅ Funcionário Removido",
-        description: `${employeeToRemove.name} foi removido com sucesso.`,
-      });
+      if (isSupabaseConnected) {
+        // Remover do Supabase
+        await supabaseService.deleteEmployee(id);
+        const updatedEmployees = employees.filter(emp => emp.id !== id);
+        await saveEmployees(updatedEmployees);
+        
+        toast({
+          title: "✅ Funcionário Removido",
+          description: `${employeeToRemove.name} foi removido com sucesso do Supabase.`,
+        });
+      } else {
+        // Modo offline - remover apenas localmente
+        const updatedEmployees = employees.filter(emp => emp.id !== id);
+        await saveEmployees(updatedEmployees);
+        
+        toast({
+          title: "✅ Funcionário Removido (Offline)",
+          description: `${employeeToRemove.name} foi removido localmente.`,
+        });
+      }
 
       return true;
     } catch (error) {
-      console.error('Erro ao remover funcionário:', error);
+      console.error('❌ Erro ao remover funcionário:', error);
       toast({
         title: "❌ Erro ao Remover",
         description: "Não foi possível remover o funcionário.",

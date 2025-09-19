@@ -57,20 +57,20 @@ const EmployeeManager = () => {
   );
 
   // Salvar funcionário (adicionar ou editar)
-  const handleSaveEmployee = (data: EmployeeFormData): boolean => {
+  const handleSaveEmployee = async (data: EmployeeFormData) => {
     try {
       if (editingEmployee) {
-        const success = updateEmployee(editingEmployee.id, data);
+        const success = await updateEmployee(editingEmployee.id, data);
         if (success) {
           toast.success('Funcionário atualizado com sucesso!');
-          setEditingEmployee(null);
           setShowForm(false);
+          setEditingEmployee(null);
         } else {
-          toast.error('Erro ao atualizar funcionário. Verifique se o ramal não está em uso.');
+          toast.error('Erro ao atualizar funcionário.');
         }
         return success;
       } else {
-        const success = addEmployee(data);
+        const success = await addEmployee(data);
         if (success) {
           toast.success('Funcionário adicionado com sucesso!');
           setShowForm(false);
@@ -86,9 +86,9 @@ const EmployeeManager = () => {
   };
 
   // Confirmar exclusão
-  const handleDeleteEmployee = () => {
+  const handleDeleteEmployee = async () => {
     if (deleteEmployee) {
-      const success = removeEmployee(deleteEmployee.id);
+      const success = await removeEmployee(deleteEmployee.id);
       if (success) {
         toast.success('Funcionário removido com sucesso!');
       } else {

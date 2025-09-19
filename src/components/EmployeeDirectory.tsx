@@ -62,11 +62,11 @@ const EmployeeDirectory = () => {
     }
   };
   
-  const handleFormSubmit = (formData: EmployeeFormData) => {
+  const handleFormSubmit = async (formData: EmployeeFormData) => {
     if (editingEmployee) {
-      updateEmployee(editingEmployee.id!, formData);
+      await updateEmployee(editingEmployee.id!, formData);
     } else {
-      addEmployee(formData);
+      await addEmployee(formData);
     }
     setIsFormOpen(false);
     setEditingEmployee(null);
