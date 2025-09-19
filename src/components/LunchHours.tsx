@@ -3,7 +3,8 @@ import { Clock, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
-import { useEmployeeSearch, type Employee } from "@/hooks/useEmployeeSearch";
+import { useEmployeeManager } from "@/hooks/useEmployeeManager";
+import { type Employee } from "@/hooks/useEmployeeSearch";
 
 // Função para verificar se um funcionário está em horário de almoço
 export const isEmployeeOnLunch = (lunchTime?: string) => {
@@ -24,41 +25,9 @@ export const isEmployeeOnLunch = (lunchTime?: string) => {
 
 const LunchHours = () => {
   const { formatCurrentTime } = useCurrentTime();
-  
-  // Lista de funcionários (mesma do EmployeeDirectory)
-  const employees: Employee[] = [
-    // GENTE E GESTÃO
-    { name: "Flávia (Diretora)", extension: "4723", email: "xxx", department: "Gente e Gestão" },
-    { name: "Bruno (RH)", extension: "4727", email: "bruno.oliveira@torp.ind.br", department: "Gente e Gestão", lunchTime: "12:00-13:00" },
-    { name: "Fabiane (Enfermagem)", extension: "4805", email: "fabiane.lourenco@torp.ind.br", department: "Gente e Gestão", lunchTime: "12:00-13:00" },
-    
-    // SALAS
-    { name: "Sala de Reuniões", extension: "4724", email: "xxx", department: "Salas" },
-    
-    // ADMINISTRATIVO
-    { name: "Ediane (Financeiro)", extension: "4713", email: "ediane.costa@torp.ind.br", department: "Administrativo", lunchTime: "12:00-13:00" },
-    { name: "Michele (Fiscal)", extension: "4729", email: "fiscal@torp.ind.br", department: "Administrativo", lunchTime: "11:00-12:00" },
-    { name: "Jussara Inácio (Recepção)", extension: "4701", email: "jussara.inacio@torp.ind.br", department: "Administrativo", lunchTime: "11:30-13:00" },
-    { name: "Fernanda (Faturamento)", extension: "4737", email: "fernanda.faturamento@torp.com", department: "Administrativo", lunchTime: "12:30-14:00" },
-    { name: "Tatiana (DP)", extension: "4728", email: "tatiana.guimaraes@torp.ind.br", department: "Administrativo", lunchTime: "12:30-13:30" },
-    
-    // COMERCIAL
-    { name: "Carlos Eduardo (Supervisor Operações)", extension: "4717", email: "carloseduardo.oliveira@torp.ind.br", department: "Comercial" },
-    { name: "Khendry", extension: "4714", email: "khendry.mendonca@torp.ind.br", department: "Comercial", lunchTime: "12:00-13:00" },
-    { name: "Marcus", extension: "4732", email: "marcos.teixeira@torp.ind.br", department: "Comercial", lunchTime: "11:00-12:00" },
-    
-    // CONTROLADORIA
-    { name: "Vinícius", extension: "4705", email: "vinicius.reis@torp.ind.br", department: "Controladoria", lunchTime: "12:30-13:30" },
-    
-    // MARKETING
-    { name: "Alice", extension: "4718", email: "alice.abreu@torp.ind.br", department: "Marketing", lunchTime: "12:00-13:00" },
-    
-    // TI
-    { name: "Wesley Oliveira", extension: "4722", email: "wesley.oliveira@torp.ind.br", department: "TI", lunchTime: "12:30-13:30" },
-    
-    // COMPRAS/PREFEITURA
-    { name: "Felipe (Supervisor Operações)", extension: "4708", email: "felipe.marciano@torp.ind.br", department: "Compras/Prefeitura", lunchTime: "13:00-14:00" },
-  ];
+
+  // Obter funcionários do sistema principal (sincronizado com o diretório)
+  const { employees } = useEmployeeManager();
 
   // Contar quantos funcionários estão em almoço
   const employeesOnLunch = employees.filter(employee => 
