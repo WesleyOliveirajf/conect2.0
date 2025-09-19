@@ -29,6 +29,10 @@ import ServiceStatus from './ServiceStatus';
 interface AdminPanelProps {
   announcements: Announcement[];
   onAnnouncementsChange: (announcements: Announcement[]) => void;
+  onAddAnnouncement?: (announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
+  onUpdateAnnouncement?: (id: string, updates: Partial<Announcement>) => Promise<boolean>;
+  onDeleteAnnouncement?: (id: string) => Promise<boolean>;
+  isSupabaseConnected?: boolean;
   exportData?: () => string | null;
   importData?: (jsonData: string) => boolean;
   restoreFromBackup?: () => boolean;
@@ -38,6 +42,10 @@ interface AdminPanelProps {
 const AdminPanel: React.FC<AdminPanelProps> = ({
   announcements,
   onAnnouncementsChange,
+  onAddAnnouncement,
+  onUpdateAnnouncement,
+  onDeleteAnnouncement,
+  isSupabaseConnected = false,
   exportData,
   importData,
   restoreFromBackup,
@@ -262,10 +270,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   <AnnouncementManagerSimple
                     announcements={announcements}
                     onAnnouncementsChange={onAnnouncementsChange}
-                    exportData={exportData}
-                    importData={importData}
-                    restoreFromBackup={restoreFromBackup}
-                    resetAnnouncements={resetAnnouncements}
+                    onAddAnnouncement={onAddAnnouncement}
+                    onUpdateAnnouncement={onUpdateAnnouncement}
+                    onDeleteAnnouncement={onDeleteAnnouncement}
+                    isSupabaseConnected={isSupabaseConnected}
                   />
                 </TabsContent>
                 

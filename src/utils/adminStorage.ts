@@ -20,6 +20,7 @@ export type Announcement = {
   content: string;
   priority: 'alta' | 'média' | 'baixa';
   date: string;
+  image?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -79,6 +80,16 @@ export class AdminStorage {
   // Carregar comunicados com fallback para dados padrão (descriptografado)
   static loadAnnouncements(): Announcement[] {
     try {
+      // Primeiro, verificar se há dados no localStorage que possam estar corrompidos
+      const rawData = localStorage.getItem(STORAGE_KEYS.ANNOUNCEMENTS);
+      if (rawData && !rawData.startsWith('{"')) {
+        // Dados antigos ou corrompidos - limpar
+        console.log('🧹 Detectados dados antigos/corrompidos, limpando...');
+        localStorage.removeItem(STORAGE_KEYS.ANNOUNCEMENTS);
+        localStorage.removeItem(STORAGE_KEYS.BACKUP_DATA);
+        localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+      }
+
       const stored = getEncryptedStorage<Announcement[]>(STORAGE_KEYS.ANNOUNCEMENTS);
       
       if (stored && Array.isArray(stored)) {

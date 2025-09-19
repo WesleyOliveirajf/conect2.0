@@ -9,10 +9,14 @@ import Chatbot from "@/components/Chatbot";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
 
 const Index = () => {
-  const { 
-    announcements, 
-    updateAnnouncements, 
+  const {
+    announcements,
+    updateAnnouncements,
+    addAnnouncement,
+    updateAnnouncement,
+    deleteAnnouncement,
     isLoading,
+    isSupabaseConnected,
     exportData,
     importData,
     restoreFromBackup,
@@ -38,9 +42,13 @@ const Index = () => {
         <main className="container mx-auto px-4 sm:px-6 pb-12">
           {/* Painel Administrativo */}
           <div className="mb-6 flex justify-end">
-            <AdminPanel 
+            <AdminPanel
               announcements={announcements}
               onAnnouncementsChange={updateAnnouncements}
+              onAddAnnouncement={addAnnouncement}
+              onUpdateAnnouncement={updateAnnouncement}
+              onDeleteAnnouncement={deleteAnnouncement}
+              isSupabaseConnected={isSupabaseConnected}
               exportData={exportData}
               importData={importData}
               restoreFromBackup={restoreFromBackup}

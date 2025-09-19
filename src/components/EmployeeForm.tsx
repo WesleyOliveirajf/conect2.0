@@ -27,6 +27,9 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
 
   const [errors, setErrors] = useState<Partial<EmployeeFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newDepartmentName, setNewDepartmentName] = useState('');
+  const [showNewDepartmentInput, setShowNewDepartmentInput] = useState(false);
+  const [localDepartments, setLocalDepartments] = useState<string[]>([]);
 
   // Preencher formulário se estiver editando
   useEffect(() => {
@@ -40,6 +43,22 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
       });
     }
   }, [employee]);
+
+  // Atualizar departamentos locais quando a prop departments mudar
+  useEffect(() => {
+    setLocalDepartments(departments);
+  }, [departments]);
+
+  // Resetar o campo de novo departamento quando a lista de departamentos mudar
+  useEffect(() => {
+    if (departments.includes(formData.department) && showNewDepartmentInput) {
+      setShowNewDepartmentInput(false);
+      setNewDepartmentName('');
+    }
+  }, [departments, formData.department, showNewDepartmentInput]);
+
+  // Combinar departamentos existentes com novos departamentos criados localmente
+  const availableDepartments = [...new Set([...localDepartments, ...(formData.department && !showNewDepartmentInput ? [formData.department] : [])])].sort();
 
   // Validar formulário
   const validateForm = (): boolean => {
@@ -55,9 +74,7 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
       newErrors.extension = 'Ramal deve ter 4 dígitos';
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (formData.email !== 'xxx' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (formData.email.trim() && formData.email !== 'xxx' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Email inválido';
     }
 
@@ -172,7 +189,7 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
         <div className="space-y-2">
           <Label htmlFor="email" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            Email *
+            Email
           </Label>
           <Input
             id="email"
@@ -186,7 +203,7 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
             <p className="text-sm text-red-500">{errors.email}</p>
           )}
           <p className="text-xs text-muted-foreground">
-            Use "xxx" se o email não estiver disponível
+            Campo opcional. Use "xxx" se o email não estiver disponível
           </p>
         </div>
 
@@ -197,19 +214,35 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
             Departamento *
           </Label>
           <Select
-            value={formData.department}
-            onValueChange={(value) => updateField('department', value)}
+            value={showNewDepartmentInput ? 'Novo Departamento' : formData.department}
+            onValueChange={(value) => {
+              if (value === 'Novo Departamento') {
+                setShowNewDepartmentInput(true);
+                setNewDepartmentName('');
+                updateField('department', '');
+              } else {
+                setShowNewDepartmentInput(false);
+                setNewDepartmentName('');
+                updateField('department', value);
+              }
+            }}
           >
             <SelectTrigger className={errors.department ? 'border-red-500' : ''}>
               <SelectValue placeholder="Selecione o departamento" />
             </SelectTrigger>
             <SelectContent>
-              {departments.map((dept) => (
-                <SelectItem key={dept} value={dept}>
-                  {dept}
+              {availableDepartments && availableDepartments.length > 0 ? (
+                availableDepartments.map((dept, index) => (
+                  <SelectItem key={`dept-${index}-${dept}`} value={dept}>
+                    {dept}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem key="loading-item" value="loading" disabled>
+                  Carregando departamentos...
                 </SelectItem>
-              ))}
-              <SelectItem value="Novo Departamento">
+              )}
+              <SelectItem key="new-department-item" value="Novo Departamento">
                 + Novo Departamento
               </SelectItem>
             </SelectContent>
@@ -219,13 +252,51 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
           )}
           
           {/* Campo para novo departamento */}
-          {formData.department === 'Novo Departamento' && (
-            <Input
-              type="text"
-              placeholder="Digite o nome do novo departamento"
-              onChange={(e) => updateField('department', e.target.value)}
-              className="mt-2"
-            />
+          {showNewDepartmentInput && (
+            <div className="space-y-2">
+              <Input
+                type="text"
+                value={newDepartmentName}
+                onChange={(e) => {
+                  setNewDepartmentName(e.target.value);
+                  updateField('department', e.target.value);
+                }}
+                placeholder="Digite o nome do novo departamento"
+                className="mt-2"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    if (newDepartmentName.trim()) {
+                      const trimmedName = newDepartmentName.trim();
+                      updateField('department', trimmedName);
+                      // Adicionar o novo departamento à lista local
+                      setLocalDepartments(prev => [...new Set([...prev, trimmedName])].sort());
+                      setShowNewDepartmentInput(false);
+                      setNewDepartmentName('');
+                    }
+                  }}
+                  disabled={!newDepartmentName.trim()}
+                >
+                  Confirmar
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setShowNewDepartmentInput(false);
+                    setNewDepartmentName('');
+                    updateField('department', '');
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
           )}
         </div>
 

@@ -41,6 +41,9 @@ const EmployeeManager = () => {
     getDepartments
   } = useEmployeeManager();
 
+  // Obter departamentos atualizados sempre que employees mudarem
+  const currentDepartments = getDepartments();
+
   const [showForm, setShowForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [deleteEmployee, setDeleteEmployee] = useState<Employee | null>(null);
@@ -196,7 +199,7 @@ const EmployeeManager = () => {
           employee={editingEmployee || undefined}
           onSave={handleSaveEmployee}
           onCancel={handleCancelForm}
-          departments={getDepartments()}
+          departments={currentDepartments}
           isEditing={!!editingEmployee}
         />
       )}

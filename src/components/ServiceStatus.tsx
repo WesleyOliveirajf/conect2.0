@@ -18,7 +18,7 @@ const ServiceStatusComponent: React.FC<ServiceStatusProps> = ({ className }) => 
   const checkStatus = async () => {
     setIsRefreshing(true);
     try {
-      const serviceStatus = groqService.getServiceStatus();
+      const serviceStatus = groqService.getStatus();
       setStatus(serviceStatus);
       setLastCheck(new Date());
     } catch (error) {

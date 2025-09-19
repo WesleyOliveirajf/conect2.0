@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { type Employee } from './useEmployeeSearch';
-import { toast } from './use-toast';
+import { supabaseService } from '@/utils/supabaseService';
 
 const STORAGE_KEY = 'torp_employees';
 
@@ -62,6 +63,8 @@ export interface EmployeeFormData {
 export const useEmployeeManager = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState(false);
+  const { toast } = useToast();
 
   // Função para garantir que todos os funcionários tenham IDs
   const ensureEmployeeIds = (employees: Employee[]): Employee[] => {
@@ -71,8 +74,53 @@ export const useEmployeeManager = () => {
     }));
   };
 
-  // Carregar funcionários do localStorage ou usar dados padrão
+  // Inicializar Supabase e carregar dados
   useEffect(() => {
+    const initializeData = async () => {
+      setIsLoading(true);
+      
+      try {
+        // Tentar inicializar Supabase
+        const supabaseInitialized = supabaseService.initialize();
+        setIsSupabaseConnected(supabaseInitialized);
+
+        if (supabaseInitialized) {
+          console.log('🔄 Carregando funcionários do Supabase...');
+          
+          try {
+            // Carregar dados do Supabase
+            const supabaseEmployees = await supabaseService.getEmployees();
+            
+            if (supabaseEmployees.length > 0) {
+              setEmployees(supabaseEmployees);
+              // Sincronizar com localStorage como backup
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(supabaseEmployees));
+              console.log(`✅ ${supabaseEmployees.length} funcionários carregados do Supabase`);
+            } else {
+              // Se Supabase estiver vazio, migrar dados locais
+              await migrateLocalDataToSupabase();
+            }
+          } catch (supabaseError) {
+            console.warn('⚠️ Erro ao carregar do Supabase, usando dados locais:', supabaseError);
+            loadFromLocalStorage();
+          }
+        } else {
+          console.log('📱 Modo offline - usando localStorage');
+          loadFromLocalStorage();
+        }
+      } catch (error) {
+        console.error('❌ Erro na inicialização:', error);
+        loadFromLocalStorage();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
+  }, []);
+
+  // Carregar dados do localStorage
+  const loadFromLocalStorage = () => {
     try {
       console.log('[useEmployeeManager] 🔍 Verificando dados no localStorage...');
       const storedEmployees = localStorage.getItem(STORAGE_KEY);
@@ -98,19 +146,44 @@ export const useEmployeeManager = () => {
       console.error('[useEmployeeManager] ❌ Erro ao carregar funcionários:', error);
       const employeesWithIds = ensureEmployeeIds(DEFAULT_EMPLOYEES);
       setEmployees(employeesWithIds);
-    } finally {
-      setIsLoading(false);
-      console.log('[useEmployeeManager] 🎉 Carregamento concluído');
     }
-  }, []);
+  };
 
-  // Salvar funcionários no localStorage
-  const saveEmployees = (newEmployees: Employee[]) => {
+  // Migrar dados locais para Supabase
+  const migrateLocalDataToSupabase = async () => {
     try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const localEmployees = stored ? JSON.parse(stored) : DEFAULT_EMPLOYEES;
+      
+      console.log('🔄 Migrando dados locais para Supabase...');
+      await supabaseService.syncEmployeesToSupabase(localEmployees);
+      
+      // Recarregar do Supabase após migração
+      const supabaseEmployees = await supabaseService.getEmployees();
+      setEmployees(supabaseEmployees);
+      
+      toast({
+        title: "✅ Migração Concluída",
+        description: "Dados locais foram migrados para o Supabase com sucesso.",
+      });
+    } catch (error) {
+      console.error('❌ Erro na migração:', error);
+      loadFromLocalStorage();
+    }
+  };
+
+  // Salvar funcionários (Supabase + localStorage como backup)
+  const saveEmployees = async (newEmployees: Employee[]) => {
+    try {
+      // Sempre salvar no localStorage como backup
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newEmployees));
       setEmployees(newEmployees);
+      
+      // Se Supabase estiver conectado, não precisamos fazer nada aqui
+      // pois as operações individuais já salvam no Supabase
+      console.log('💾 Funcionários salvos localmente');
     } catch (error) {
-      console.error('Erro ao salvar funcionários:', error);
+      console.error('❌ Erro ao salvar funcionários:', error);
       toast({
         title: "❌ Erro ao Salvar",
         description: "Não foi possível salvar as alterações.",
@@ -120,7 +193,7 @@ export const useEmployeeManager = () => {
   };
 
   // Adicionar novo funcionário
-  const addEmployee = (employeeData: EmployeeFormData): boolean => {
+  const addEmployee = async (employeeData: EmployeeFormData): Promise<boolean> => {
     try {
       // Verificar se o email já existe (se não for 'xxx')
       if (employeeData.email !== 'xxx') {
@@ -135,23 +208,35 @@ export const useEmployeeManager = () => {
         }
       }
 
-      const newEmployee: Employee = {
-        id: generateId(),
-        ...employeeData,
-        lunchTime: employeeData.lunchTime || undefined,
-      };
-
-      const updatedEmployees = [...employees, newEmployee];
-      saveEmployees(updatedEmployees);
-
-      toast({
-        title: "✅ Funcionário Adicionado",
-        description: `${employeeData.name} foi adicionado com sucesso.`,
-      });
+      if (isSupabaseConnected) {
+        // Adicionar no Supabase
+        const newEmployee = await supabaseService.addEmployee(employeeData);
+        const updatedEmployees = [...employees, newEmployee];
+        await saveEmployees(updatedEmployees);
+        
+        toast({
+          title: "✅ Funcionário Adicionado",
+          description: `${employeeData.name} foi adicionado com sucesso no Supabase.`,
+        });
+      } else {
+        // Modo offline - adicionar apenas localmente
+        const newEmployee: Employee = {
+          id: generateId(),
+          ...employeeData,
+          lunchTime: employeeData.lunchTime || undefined,
+        };
+        const updatedEmployees = [...employees, newEmployee];
+        await saveEmployees(updatedEmployees);
+        
+        toast({
+          title: "✅ Funcionário Adicionado (Offline)",
+          description: `${employeeData.name} foi adicionado localmente.`,
+        });
+      }
 
       return true;
     } catch (error) {
-      console.error('Erro ao adicionar funcionário:', error);
+      console.error('❌ Erro ao adicionar funcionário:', error);
       toast({
         title: "❌ Erro ao Adicionar",
         description: "Não foi possível adicionar o funcionário.",
