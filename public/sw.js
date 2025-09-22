@@ -76,7 +76,7 @@ self.addEventListener('fetch', (event) => {
           
           return fetch(request)
             .then((response) => {
-              if (response.status === 200) {
+              if (response.status === 200 && request.method === 'GET') {
                 const responseClone = response.clone();
                 caches.open(STATIC_CACHE_NAME)
                   .then((cache) => {
@@ -101,7 +101,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.status === 200) {
+          if (response.status === 200 && request.method === 'GET') {
             const responseClone = response.clone();
             caches.open(DYNAMIC_CACHE_NAME)
               .then((cache) => {
@@ -153,7 +153,7 @@ self.addEventListener('fetch', (event) => {
         
         return fetch(request)
           .then((response) => {
-            if (response.status === 200) {
+            if (response.status === 200 && request.method === 'GET') {
               const responseClone = response.clone();
               caches.open(DYNAMIC_CACHE_NAME)
                 .then((cache) => {

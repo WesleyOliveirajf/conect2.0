@@ -195,8 +195,8 @@ export const useEmployeeManager = () => {
   // Adicionar novo funcionário
   const addEmployee = async (employeeData: EmployeeFormData): Promise<boolean> => {
     try {
-      // Verificar se o email já existe (se não for 'xxx')
-      if (employeeData.email !== 'xxx') {
+      // Verificar se o email já existe (apenas se o email não estiver vazio e não for 'xxx')
+      if (employeeData.email.trim() && employeeData.email !== 'xxx') {
         const emailExists = employees.some(emp => emp.email === employeeData.email);
         if (emailExists) {
           toast({
@@ -259,8 +259,8 @@ export const useEmployeeManager = () => {
         return false;
       }
 
-      // Verificar se o email já existe (exceto para o próprio funcionário e se não for 'xxx')
-      if (employeeData.email !== 'xxx') {
+      // Verificar se o email já existe (exceto para o próprio funcionário, apenas se o email não estiver vazio e não for 'xxx')
+      if (employeeData.email.trim() && employeeData.email !== 'xxx') {
         const emailExists = employees.some(emp => 
           emp.id !== id && emp.email === employeeData.email
         );
@@ -434,6 +434,7 @@ export const useEmployeeManager = () => {
     addEmployee,
     updateEmployee,
     removeEmployee,
+    deleteEmployee: removeEmployee, // Alias para compatibilidade
     resetToDefault,
     exportEmployees,
     importEmployees,

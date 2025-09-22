@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
 
   return {
-  base: isProduction ? '/conect2.0/' : '/',
+  base: '/',
   server: {
     port: 8080,
     host: '127.0.0.1',
