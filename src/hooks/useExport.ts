@@ -12,7 +12,7 @@ export function useExport() {
         emp.name,
         emp.department,
         emp.extension,
-        emp.email
+        emp.email || 'N/A'
       ]);
 
       // Combinar cabeçalho e dados
@@ -85,7 +85,7 @@ export function useExport() {
   const exportToText = (employees: Employee[], filename: string = "funcionarios_torp") => {
     try {
       const textContent = employees
-        .map(emp => `${emp.name} - ${emp.department} - Ramal: ${emp.extension} - Email: ${emp.email}`)
+        .map(emp => `${emp.name} - ${emp.department} - Ramal: ${emp.extension}${emp.email ? ` - Email: ${emp.email}` : ''}`)
         .join("\n");
 
       const blob = new Blob([textContent], { type: "text/plain" });

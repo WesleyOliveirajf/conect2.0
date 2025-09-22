@@ -7,7 +7,7 @@ export interface Employee {
   id: string;
   name: string;
   extension: string;
-  email: string;
+  email?: string;
   department: string;
   lunchTime?: string;
 }
@@ -183,8 +183,10 @@ class EmployeeSearchService {
    */
   private searchByEmail(query: string): Employee[] {
     return this.employees.filter(emp =>
-      emp.email.toLowerCase().includes(query.replace(/@.*$/, '')) ||
-      emp.email.toLowerCase().includes(query)
+      emp.email && (
+        emp.email.toLowerCase().includes(query.replace(/@.*$/, '')) ||
+        emp.email.toLowerCase().includes(query)
+      )
     );
   }
 

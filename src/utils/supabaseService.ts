@@ -12,7 +12,7 @@ export interface DatabaseEmployee {
   id: string;
   name: string;
   extension: string;
-  email: string;
+  email?: string;
   department: string;
   lunch_time?: string;
   created_at?: string;

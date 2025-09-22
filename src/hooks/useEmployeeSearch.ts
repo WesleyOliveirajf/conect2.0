@@ -4,7 +4,7 @@ export interface Employee {
   id?: string;
   name: string;
   extension: string;
-  email: string;
+  email?: string;
   department: string;
   lunchTime?: string; // Horário de almoço no formato "12:00-13:00"
 }
@@ -17,7 +17,7 @@ export function useEmployeeSearch(employees: Employee[]) {
     return employees.filter((employee) => {
       const matchesSearch = 
         employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
         employee.extension.includes(searchTerm);
 

@@ -75,7 +75,7 @@ export function AdvancedSearch({ employees, filters, onFiltersChange, onClose }:
     if (searchTerm) {
       filtered = filtered.filter(emp => 
         emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (emp.email && emp.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         emp.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
         emp.extension.includes(searchTerm)
       );

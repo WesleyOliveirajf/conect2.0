@@ -258,7 +258,7 @@ const EmployeeManager = () => {
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>Ramal: {employee.extension}</span>
-                          <span>Email: {employee.email}</span>
+                          {employee.email && <span>Email: {employee.email}</span>}
                           {employee.lunchTime && (
                             <span>Almoço: {employee.lunchTime}</span>
                           )}

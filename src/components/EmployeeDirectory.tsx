@@ -106,7 +106,7 @@ const EmployeeDirectory = () => {
       const searchLower = debouncedGlobalSearchTerm.toLowerCase();
       filtered = filtered.filter(emp => 
         emp.name.toLowerCase().includes(searchLower) ||
-        emp.email.toLowerCase().includes(searchLower) ||
+        (emp.email && emp.email.toLowerCase().includes(searchLower)) ||
         emp.department.toLowerCase().includes(searchLower) ||
         emp.extension.includes(debouncedGlobalSearchTerm)
       );
@@ -117,7 +117,7 @@ const EmployeeDirectory = () => {
       const searchLower = advancedFilters.searchTerm.toLowerCase();
       filtered = filtered.filter(emp => 
         emp.name.toLowerCase().includes(searchLower) ||
-        emp.email.toLowerCase().includes(searchLower) ||
+        (emp.email && emp.email.toLowerCase().includes(searchLower)) ||
         emp.department.toLowerCase().includes(searchLower) ||
         emp.extension.includes(advancedFilters.searchTerm)
       );
@@ -405,26 +405,30 @@ const EmployeeDirectory = () => {
                            >
                              <Phone className="h-2.5 w-2.5 sm:h-3 sm:w-3" aria-hidden="true" />
                            </Button>
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => openTeams(employee.email, employee.name)}
-                             className="h-7 w-7 p-0 bg-background/50 hover:bg-background border-border/60"
-                             title={`Abrir Teams com ${employee.name}`}
-                             aria-label={`Abrir conversa no Teams com ${employee.name}`}
-                           >
-                             <MessageSquare className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600" aria-hidden="true" />
-                           </Button>
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => window.open(`mailto:${employee.email}`, '_blank', 'noopener,noreferrer')}
-                             className="h-7 w-7 p-0 bg-background/50 hover:bg-background border-border/60"
-                             title={`Enviar email para ${employee.name}`}
-                             aria-label={`Enviar email para ${employee.name} (${employee.email})`}
-                           >
-                             <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3" aria-hidden="true" />
-                           </Button>
+                           {employee.email && (
+                             <>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => openTeams(employee.email!, employee.name)}
+                                 className="h-7 w-7 p-0 bg-background/50 hover:bg-background border-border/60"
+                                 title={`Abrir Teams com ${employee.name}`}
+                                 aria-label={`Abrir conversa no Teams com ${employee.name}`}
+                               >
+                                 <MessageSquare className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600" aria-hidden="true" />
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => window.open(`mailto:${employee.email}`, '_blank', 'noopener,noreferrer')}
+                                 className="h-7 w-7 p-0 bg-background/50 hover:bg-background border-border/60"
+                                 title={`Enviar email para ${employee.name}`}
+                                 aria-label={`Enviar email para ${employee.name} (${employee.email})`}
+                               >
+                                 <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3" aria-hidden="true" />
+                               </Button>
+                             </>
+                           )}
                            
                            {/* Botões administrativos - visíveis apenas para admins */}
                            {isAdminMode && (
@@ -476,29 +480,31 @@ const EmployeeDirectory = () => {
                          </Button>
                        </div>
                        
-                       <div className="flex items-center gap-2 sm:gap-3 bg-muted/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg">
-                         <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: 'hsl(var(--directory-accent))' }} />
-                         <div className="flex-1 min-w-0">
-                           <span className="text-xs font-medium text-muted-foreground block">Email</span>
-                           <a 
-                             href={`mailto:${employee.email}`}
-                             className="text-xs sm:text-sm text-primary hover:text-primary-glow transition-colors hover:underline block truncate"
-                             title={employee.email}
+                       {employee.email && (
+                         <div className="flex items-center gap-2 sm:gap-3 bg-muted/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg">
+                           <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: 'hsl(var(--directory-accent))' }} />
+                           <div className="flex-1 min-w-0">
+                             <span className="text-xs font-medium text-muted-foreground block">Email</span>
+                             <a 
+                               href={`mailto:${employee.email}`}
+                               className="text-xs sm:text-sm text-primary hover:text-primary-glow transition-colors hover:underline block truncate"
+                               title={employee.email}
+                             >
+                               {employee.email}
+                             </a>
+                           </div>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => copyToClipboard(employee.email!, "email")}
+                             className="h-6 w-6 p-0 hover:bg-muted/50"
+                             title="Copiar email"
+                             aria-label={`Copiar email ${employee.email} de ${employee.name}`}
                            >
-                             {employee.email}
-                           </a>
+                             <Copy className="h-3 w-3" aria-hidden="true" />
+                           </Button>
                          </div>
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => copyToClipboard(employee.email, "email")}
-                           className="h-6 w-6 p-0 hover:bg-muted/50"
-                           title="Copiar email"
-                           aria-label={`Copiar email ${employee.email} de ${employee.name}`}
-                         >
-                           <Copy className="h-3 w-3" aria-hidden="true" />
-                         </Button>
-                       </div>
+                       )}
                        
                        {employee.lunchTime && (
                          <div className="flex items-center gap-2 sm:gap-3 bg-muted/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg">

@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.employees (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     extension VARCHAR(50) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255),
     department VARCHAR(255) NOT NULL,
     lunch_time VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -178,7 +178,7 @@ employees:
 - id (UUID, PK)
 - name (VARCHAR)
 - extension (VARCHAR) 
-- email (VARCHAR, UNIQUE)
+- email (VARCHAR, opcional)
 - department (VARCHAR)
 - lunch_time (VARCHAR, opcional)
 - created_at, updated_at (TIMESTAMP)

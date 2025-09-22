@@ -55,7 +55,7 @@ const DEFAULT_EMPLOYEES: Employee[] = [
 export interface EmployeeFormData {
   name: string;
   extension: string;
-  email: string;
+  email?: string;
   department: string;
   lunchTime?: string;
 }
@@ -375,7 +375,7 @@ export const useEmployeeManager = () => {
 
       // Validar cada funcionário
       for (const emp of importedEmployees) {
-        if (!emp.name || !emp.extension || !emp.email || !emp.department) {
+        if (!emp.name || !emp.extension || !emp.department) {
           throw new Error('Dados de funcionário inválidos');
         }
       }

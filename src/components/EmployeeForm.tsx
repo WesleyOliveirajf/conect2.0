@@ -37,7 +37,7 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
       setFormData({
         name: employee.name,
         extension: employee.extension,
-        email: employee.email,
+        email: employee.email || '',
         department: employee.department,
         lunchTime: employee.lunchTime || '',
       });
