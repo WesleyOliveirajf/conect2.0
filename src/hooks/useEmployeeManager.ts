@@ -195,18 +195,7 @@ export const useEmployeeManager = () => {
   // Adicionar novo funcionário
   const addEmployee = async (employeeData: EmployeeFormData): Promise<boolean> => {
     try {
-      // Verificar se o email já existe (apenas se o email não estiver vazio e não for 'xxx')
-      if (employeeData.email.trim() && employeeData.email !== 'xxx') {
-        const emailExists = employees.some(emp => emp.email === employeeData.email);
-        if (emailExists) {
-          toast({
-            title: "❌ Email já existe",
-            description: `O email ${employeeData.email} já está sendo usado por outro funcionário.`,
-            variant: "destructive",
-          });
-          return false;
-        }
-      }
+      // Removida a validação de email duplicado - emails podem ser iguais
 
       if (isSupabaseConnected) {
         // Adicionar no Supabase
@@ -259,20 +248,7 @@ export const useEmployeeManager = () => {
         return false;
       }
 
-      // Verificar se o email já existe (exceto para o próprio funcionário, apenas se o email não estiver vazio e não for 'xxx')
-      if (employeeData.email.trim() && employeeData.email !== 'xxx') {
-        const emailExists = employees.some(emp => 
-          emp.id !== id && emp.email === employeeData.email
-        );
-        if (emailExists) {
-          toast({
-            title: "❌ Email já existe",
-            description: `O email ${employeeData.email} já está sendo usado por outro funcionário.`,
-            variant: "destructive",
-          });
-          return false;
-        }
-      }
+      // Removida a validação de email duplicado - emails podem ser iguais
 
       if (isSupabaseConnected) {
         // Atualizar no Supabase
