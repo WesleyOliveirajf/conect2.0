@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Variáveis de Ambiente</title>
+</head>
+<body>
+    <h1>Teste de Variáveis de Ambiente</h1>
+    <div id="results"></div>
+    
+    <script type="module">
+        console.log('=== TESTE DE VARIÁVEIS NO BUILD ===');
+        
+        const results = document.getElementById('results');
+        
+        // Teste das variáveis do Supabase
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        console.log('VITE_SUPABASE_URL:', supabaseUrl);
+        console.log('VITE_SUPABASE_ANON_KEY:', supabaseKey ? 'DEFINIDA' : 'NÃO DEFINIDA');
+        
+        results.innerHTML = `
+            <h2>Resultados do Teste:</h2>
+            <p><strong>VITE_SUPABASE_URL:</strong> ${supabaseUrl || 'NÃO DEFINIDA'}</p>
+            <p><strong>VITE_SUPABASE_ANON_KEY:</strong> ${supabaseKey ? 'DEFINIDA' : 'NÃO DEFINIDA'}</p>
+            <p><strong>Todas as variáveis import.meta.env:</strong></p>
+            <pre>${JSON.stringify(import.meta.env, null, 2)}</pre>
+        `;
+        
+        // Alert para garantir visibilidade
+        if (!supabaseUrl || !supabaseKey) {
+            alert('❌ ERRO: Variáveis do Supabase não definidas no build!');
+        } else {
+            alert('✅ Variáveis do Supabase encontradas no build!');
+        }
+    </script>
+</body>
+</html>

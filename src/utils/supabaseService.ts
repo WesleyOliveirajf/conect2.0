@@ -60,14 +60,23 @@ class SupabaseService {
     }
 
     try {
+      console.log('🔧 SupabaseService: Iniciando inicialização...');
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+      console.log('🔍 Verificando variáveis de ambiente:');
+      console.log('- VITE_SUPABASE_URL:', supabaseUrl ? 'DEFINIDA' : 'NÃO DEFINIDA');
+      console.log('- VITE_SUPABASE_ANON_KEY:', supabaseKey ? 'DEFINIDA' : 'NÃO DEFINIDA');
+      console.log('- URL completa:', supabaseUrl);
+
       if (!supabaseUrl || !supabaseKey) {
         console.warn('⚠️ Variáveis do Supabase não configuradas. Usando modo offline.');
+        console.warn('⚠️ URL:', supabaseUrl);
+        console.warn('⚠️ KEY:', supabaseKey ? 'PRESENTE' : 'AUSENTE');
         return false;
       }
 
+      console.log('🚀 Criando cliente Supabase...');
       this.supabase = createClient<Database>(supabaseUrl, supabaseKey);
       this.isInitialized = true;
       console.log('✅ Supabase inicializado com sucesso');

@@ -1,11 +1,11 @@
-const CACHE_NAME = 'torp-huddle-v1';
-const STATIC_CACHE_NAME = 'torp-huddle-static-v1';
-const DYNAMIC_CACHE_NAME = 'torp-huddle-dynamic-v1';
+// Atualizado: corrige excesso de cache e garante atualização automática
+const CACHE_NAME = 'torp-huddle-v2';
+const STATIC_CACHE_NAME = 'torp-huddle-static-v2';
+const DYNAMIC_CACHE_NAME = 'torp-huddle-dynamic-v2';
 
-// Recursos para cache estático
+// Recursos para cache estático (apenas arquivos estáticos do mesmo domínio)
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
+  // NÃO incluir '/' nem '/index.html' aqui para evitar cache da página principal
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
@@ -63,9 +63,40 @@ self.addEventListener('fetch', (event) => {
   if (!request.url.startsWith('http')) {
     return;
   }
+
+  // Sempre usar Network First para navegações/documentos (index.html e rotas SPA)
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cache opcional do index para fallback offline (sem travar atualização)
+          const responseClone = response.clone();
+          caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+            cache.put('/index.html', responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Fallback para página offline se disponível
+          return caches.match('/index.html');
+        })
+    );
+    return;
+  }
+
+  // Evitar cache para chamadas ao Supabase e outras APIs externas críticas
+  if (url.hostname.endsWith('supabase.co') || url.hostname === 'api.groq.com') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
+    return;
+  }
   
-  // Estratégia Cache First para recursos estáticos
-  if (STATIC_ASSETS.some(asset => request.url.includes(asset))) {
+  // Estratégia Cache First para recursos estáticos do mesmo domínio (CSS, JS, imagens)
+  const isSameOrigin = url.origin === self.location.origin;
+  const isStaticAsset = isSameOrigin && STATIC_ASSETS.includes(url.pathname);
+  
+  if (isStaticAsset) {
     event.respondWith(
       caches.match(request)
         .then((cachedResponse) => {
@@ -96,85 +127,50 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Estratégia Network First para API e conteúdo dinâmico
-  if (request.url.includes('/api/') || request.destination === 'document') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.status === 200 && request.method === 'GET') {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE_NAME)
-              .then((cache) => {
-                cache.put(request, responseClone);
-              });
-          }
-          return response;
-        })
-        .catch(() => {
-          console.log('[SW] Network failed, trying cache:', request.url);
-          return caches.match(request)
-            .then((cachedResponse) => {
-              if (cachedResponse) {
-                return cachedResponse;
-              }
-              
-              // Fallback para página principal se for documento
-              if (request.destination === 'document') {
-                return caches.match('/index.html');
-              }
-              
-              // Resposta offline genérica
-              return new Response(
-                JSON.stringify({ 
-                  error: 'Offline', 
-                  message: 'Você está offline. Algumas funcionalidades podem não estar disponíveis.' 
-                }),
-                {
-                  status: 503,
-                  statusText: 'Service Unavailable',
-                  headers: new Headers({
-                    'Content-Type': 'application/json'
-                  })
-                }
-              );
-            });
-        })
-    );
-    return;
-  }
-  
-  // Estratégia Cache First para outros recursos (CSS, JS, imagens)
+  // Estratégia Network First para outros recursos dinâmicos internos
   event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
+    fetch(request)
+      .then((response) => {
+        if (response.status === 200 && request.method === 'GET') {
+          const responseClone = response.clone();
+          caches.open(DYNAMIC_CACHE_NAME)
+            .then((cache) => {
+              cache.put(request, responseClone);
+            });
         }
-        
-        return fetch(request)
-          .then((response) => {
-            if (response.status === 200 && request.method === 'GET') {
-              const responseClone = response.clone();
-              caches.open(DYNAMIC_CACHE_NAME)
-                .then((cache) => {
-                  cache.put(request, responseClone);
-                });
-            }
-            return response;
-          });
+        return response;
       })
-      .catch((error) => {
-        console.error('[SW] Fetch failed:', error);
-        
-        // Fallback para imagens
-        if (request.destination === 'image') {
-          return new Response(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f3f4f6"/><text x="100" y="100" text-anchor="middle" dy=".3em" fill="#9ca3af">Offline</text></svg>',
-            { headers: { 'Content-Type': 'image/svg+xml' } }
-          );
-        }
-        
-        throw error;
+      .catch(() => {
+        console.log('[SW] Network failed, trying cache:', request.url);
+        return caches.match(request)
+          .then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            
+            // Fallback para imagens
+            if (request.destination === 'image') {
+              return new Response(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f3f4f6"/><text x="100" y="100" text-anchor="middle" dy=".3em" fill="#9ca3af">Offline</text></svg>',
+                { headers: { 'Content-Type': 'image/svg+xml' } }
+              );
+            }
+            
+            // Fallback genérico
+            return new Response(
+              JSON.stringify({ 
+                error: 'Offline', 
+                message: 'Você está offline. Algumas funcionalidades podem não estar disponíveis.' 
+              }),
+              {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: new Headers({
+                  'Content-Type': 'application/json'
+                })
+              }
+            );
+          });
       })
   );
 });

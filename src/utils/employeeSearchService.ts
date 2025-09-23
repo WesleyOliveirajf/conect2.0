@@ -149,7 +149,9 @@ class EmployeeSearchService {
       'prefeitura': ['prefeitura', 'compras', 'compras/prefeitura'],
       'salas': ['salas', 'sala'],
       'pcp': ['pcp', 'planejamento', 'controle', 'produção'],
-      'almoxarifado': ['almoxarifado', 'estoque', 'armazém', 'depósito']
+      'almoxarifado': ['almoxarifado', 'estoque', 'armazém', 'depósito'],
+      // Inclusão de variações para 'Portaria'
+      'portaria': ['portaria', 'porteiro', 'portaria principal', 'entrada', 'recepção']
     };
 
     let targetDepts: string[] = [];

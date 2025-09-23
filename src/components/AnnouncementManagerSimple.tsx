@@ -22,6 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Announcement } from "@/hooks/useAnnouncements";
 import React, { useState, useEffect, useRef } from "react";
 import { ImageIcon, X } from "lucide-react";
+import { formatDateBR } from "@/lib/utils";
 
 interface AnnouncementManagerSimpleProps {
   announcements: Announcement[];
@@ -141,7 +142,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
             content: currentAnnouncement.content,
             priority: currentAnnouncement.priority,
             image: selectedImage || undefined,
-            date: now.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })
+            date: formatDateBR(now)
           });
         } else {
           // Fallback para método antigo
@@ -151,7 +152,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
             image: selectedImage || undefined,
             createdAt: now.toISOString(),
             updatedAt: now.toISOString(),
-            date: now.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })
+            date: formatDateBR(now)
           };
           const updatedAnnouncements = [newAnnouncement, ...announcements];
           onAnnouncementsChange(updatedAnnouncements);

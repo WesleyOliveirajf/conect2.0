@@ -75,13 +75,7 @@ const ServiceStatusComponent: React.FC<ServiceStatusProps> = ({ className }) => 
 
   const formatDate = (date: Date | null) => {
     if (!date) return 'Nunca';
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+    return formatDateTimeBR(date);
   };
 
   return (

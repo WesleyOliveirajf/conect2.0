@@ -1,66 +1,74 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Trash2, Wifi, WifiOff } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { MessageCircle, Send, X, Bot, User, Loader2 } from 'lucide-react';
+import { cn, formatDateTimeBR } from '@/lib/utils';
 import { useChatbot } from '@/hooks/useChatbot';
-import { cn } from '@/lib/utils';
 
 interface ChatbotProps {
   className?: string;
 }
 
-const Chatbot: React.FC<ChatbotProps> = ({ className }) => {
+export function Chatbot({ className }: ChatbotProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputMessage, setInputMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
   const {
     messages,
-    isOpen,
     isLoading,
-    isConnected,
     sendMessage,
-    toggleChat,
-    closeChat,
-    clearMessages,
-    messagesEndRef
+    clearMessages
   } = useChatbot();
 
-  const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-  // Focar no input quando abrir o chat
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
+    scrollToBottom();
+  }, [messages]);
+
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim() && !isLoading) {
+      const message = inputMessage.trim();
+      setInputMessage('');
+      sendMessage(message);
     }
-  }, [isOpen]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim() || isLoading) return;
-
-    const message = inputValue.trim();
-    setInputValue('');
-    await sendMessage(message);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!inputValue.trim() || isLoading) return;
-      const message = inputValue.trim();
-      setInputValue('');
+      handleSendMessage();
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputMessage(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputMessage.trim() && !isLoading) {
+      const message = inputMessage.trim();
+      setInputMessage('');
       sendMessage(message);
     }
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   return (
@@ -229,5 +237,3 @@ const Chatbot: React.FC<ChatbotProps> = ({ className }) => {
     </div>
   );
 };
-
-export default Chatbot;

@@ -9,21 +9,41 @@ export interface Employee {
   lunchTime?: string; // Horário de almoço no formato "12:00-13:00"
 }
 
+// Mapa de sinônimos para melhorar a busca por termos comuns
+// Mantemos o foco em termos relevantes para o caso reportado (Portaria)
+export const TERM_SYNONYMS: Record<string, string[]> = {
+  // Portaria frequentemente é referenciada como Recepção ou Entrada
+  "portaria": ["recepção", "recepcao", "entrada", "porteiro", "portaria principal"],
+};
+
 export function useEmployeeSearch(employees: Employee[]) {
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("todos");
 
   const filteredEmployees = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    const synonyms = TERM_SYNONYMS[term] || [];
+
     return employees.filter((employee) => {
+      const nameLower = employee.name.toLowerCase();
+      const deptLower = employee.department.toLowerCase();
+      const emailLower = employee.email ? employee.email.toLowerCase() : "";
+
       const matchesSearch = 
-        employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        employee.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.extension.includes(searchTerm);
+        nameLower.includes(term) ||
+        emailLower.includes(term) ||
+        deptLower.includes(term) ||
+        employee.extension.includes(searchTerm) ||
+        // Busca por sinônimos quando aplicável
+        synonyms.some((syn) =>
+          nameLower.includes(syn) ||
+          emailLower.includes(syn) ||
+          deptLower.includes(syn)
+        );
 
       const matchesDepartment = 
         departmentFilter === "todos" || 
-        employee.department.toLowerCase().includes(departmentFilter.toLowerCase());
+        deptLower.includes(departmentFilter.toLowerCase());
 
       return matchesSearch && matchesDepartment;
     });

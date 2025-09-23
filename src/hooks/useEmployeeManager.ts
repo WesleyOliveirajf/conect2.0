@@ -4,6 +4,7 @@ import { type Employee } from './useEmployeeSearch';
 import { supabaseService } from '@/utils/supabaseService';
 
 const STORAGE_KEY = 'torp_employees';
+const ENABLE_AUTO_MIGRATION = (import.meta as any).env?.VITE_ENABLE_AUTO_MIGRATION === 'true';
 
 // Função para gerar ID único
 const generateId = () => {
@@ -26,6 +27,10 @@ const DEFAULT_EMPLOYEES: Employee[] = [
   { id: generateId(), name: "Jussara Inácio (Recepção)", extension: "4701", email: "jussara.inacio@torp.ind.br", department: "Administrativo", lunchTime: "11:30-13:00" },
   { id: generateId(), name: "Fernanda (Faturamento)", extension: "4737", email: "fernanda.faturamento@torp.com", department: "Administrativo", lunchTime: "12:30-14:00" },
   { id: generateId(), name: "Tatiana (DP)", extension: "4728", email: "tatiana.guimaraes@torp.ind.br", department: "Administrativo", lunchTime: "12:30-13:30" },
+  
+  // PORTARIA
+  { id: generateId(), name: "Carlos Silva (Porteiro)", extension: "4700", email: "portaria@torp.ind.br", department: "Portaria", lunchTime: "12:00-13:00" },
+  { id: generateId(), name: "Ana Costa (Entrada Principal)", extension: "4702", email: "entrada@torp.ind.br", department: "Portaria", lunchTime: "13:00-14:00" },
   
   // COMERCIAL
   { id: generateId(), name: "Carlos Eduardo (Supervisor Operações)", extension: "4717", email: "carloseduardo.oliveira@torp.ind.br", department: "Comercial" },
@@ -77,12 +82,15 @@ export const useEmployeeManager = () => {
   // Inicializar Supabase e carregar dados
   useEffect(() => {
     const initializeData = async () => {
+      console.log('🚀 useEmployeeManager: Iniciando inicialização...');
       setIsLoading(true);
       
       try {
         // Tentar inicializar Supabase
+        console.log('🔧 Tentando inicializar Supabase...');
         const supabaseInitialized = supabaseService.initialize();
         setIsSupabaseConnected(supabaseInitialized);
+        console.log('📊 Supabase inicializado:', supabaseInitialized);
 
         if (supabaseInitialized) {
           console.log('🔄 Carregando funcionários do Supabase...');
@@ -90,6 +98,8 @@ export const useEmployeeManager = () => {
           try {
             // Carregar dados do Supabase
             const supabaseEmployees = await supabaseService.getEmployees();
+            console.log('📥 Funcionários recebidos do Supabase:', supabaseEmployees.length);
+            console.log('📋 Dados dos funcionários:', supabaseEmployees);
             
             if (supabaseEmployees.length > 0) {
               setEmployees(supabaseEmployees);
@@ -97,11 +107,19 @@ export const useEmployeeManager = () => {
               localStorage.setItem(STORAGE_KEY, JSON.stringify(supabaseEmployees));
               console.log(`✅ ${supabaseEmployees.length} funcionários carregados do Supabase`);
             } else {
-              // Se Supabase estiver vazio, migrar dados locais
-              await migrateLocalDataToSupabase();
+              console.log('📭 Supabase retornou 0 funcionários');
+              // Supabase vazio: decidir migrar ou usar dados locais conforme flag
+              if (ENABLE_AUTO_MIGRATION) {
+                console.log('🔄 Migração automática habilitada, migrando dados locais...');
+                await migrateLocalDataToSupabase();
+              } else {
+                console.log('ℹ️ Supabase vazio e migração automática desativada, carregando dados locais');
+                loadFromLocalStorage();
+              }
             }
           } catch (supabaseError) {
-            console.warn('⚠️ Erro ao carregar do Supabase, usando dados locais:', supabaseError);
+            console.error('⚠️ Erro ao carregar do Supabase:', supabaseError);
+            console.log('📱 Fallback: carregando dados locais');
             loadFromLocalStorage();
           }
         } else {
@@ -113,6 +131,7 @@ export const useEmployeeManager = () => {
         loadFromLocalStorage();
       } finally {
         setIsLoading(false);
+        console.log('🏁 Inicialização concluída');
       }
     };
 

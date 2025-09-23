@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Trash2, Edit, Plus, Upload, X, Save, AlertCircle, Megaphone, Clock, Calendar, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye, EyeOff, Megaphone } from 'lucide-react';
-import { Announcement } from '@/hooks/useAnnouncements';
+import { cn, formatDateBR } from '@/lib/utils';
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  priority: 'low' | 'medium' | 'high';
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+  date: string;
+}
 
 
 interface AnnouncementManagerProps {
   announcements: Announcement[];
-  onAnnouncementsChange: (announcements: Announcement[]) => void;
-  exportData?: () => string | null;
-  importData?: (jsonData: string) => boolean;
-  restoreFromBackup?: () => boolean;
-  resetAnnouncements?: () => boolean;
+  onAnnouncementsChange: (announcements: Announcement[]) => boolean;
+  className?: string;
 }
 
 const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({ 
@@ -53,11 +60,7 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
     }
 
     const now = new Date();
-    const dateStr = now.toLocaleDateString('pt-BR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+    const dateStr = formatDateBR(now);
 
     if (editingAnnouncement) {
       // Editar comunicado existente

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import AdvancedSearch from "./AdvancedSearch";
-import { type Employee } from "@/hooks/useEmployeeSearch";
+import { type Employee, TERM_SYNONYMS } from "@/hooks/useEmployeeSearch";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSecureSession } from "@/utils/sessionStorage";
@@ -27,8 +27,18 @@ const EmployeeDirectory = () => {
     updateEmployee, 
     deleteEmployee, 
     getDepartments,
-    isLoading 
+    isLoading,
+    isSupabaseConnected
   } = useEmployeeManager();
+  
+  // Debug logs
+  useEffect(() => {
+    console.log('🔍 EmployeeDirectory Debug:');
+    console.log('- Employees count:', employees.length);
+    console.log('- Is loading:', isLoading);
+    console.log('- Supabase connected:', isSupabaseConnected);
+    console.log('- Employees data:', employees);
+  }, [employees, isLoading, isSupabaseConnected]);
   
   // Estados para funcionalidades administrativas
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -104,23 +114,41 @@ const EmployeeDirectory = () => {
     // Aplicar filtro de busca global (campo principal) - busca em todos os campos
     if (debouncedGlobalSearchTerm) {
       const searchLower = debouncedGlobalSearchTerm.toLowerCase();
-      filtered = filtered.filter(emp => 
-        emp.name.toLowerCase().includes(searchLower) ||
-        (emp.email && emp.email.toLowerCase().includes(searchLower)) ||
-        emp.department.toLowerCase().includes(searchLower) ||
-        emp.extension.includes(debouncedGlobalSearchTerm)
-      );
+      const synonyms = TERM_SYNONYMS[searchLower] || [];
+      filtered = filtered.filter(emp => {
+        const nameLower = emp.name.toLowerCase();
+        const deptLower = emp.department.toLowerCase();
+        const emailLower = emp.email ? emp.email.toLowerCase() : "";
+        const matchesBase =
+          nameLower.includes(searchLower) ||
+          emailLower.includes(searchLower) ||
+          deptLower.includes(searchLower) ||
+          emp.extension.includes(debouncedGlobalSearchTerm);
+        const matchesSynonyms = synonyms.some(syn =>
+          nameLower.includes(syn) || emailLower.includes(syn) || deptLower.includes(syn)
+        );
+        return matchesBase || matchesSynonyms;
+      });
     }
 
     // Aplicar filtro de busca geral dos filtros avançados
     if (advancedFilters.searchTerm) {
       const searchLower = advancedFilters.searchTerm.toLowerCase();
-      filtered = filtered.filter(emp => 
-        emp.name.toLowerCase().includes(searchLower) ||
-        (emp.email && emp.email.toLowerCase().includes(searchLower)) ||
-        emp.department.toLowerCase().includes(searchLower) ||
-        emp.extension.includes(advancedFilters.searchTerm)
-      );
+      const synonyms = TERM_SYNONYMS[searchLower] || [];
+      filtered = filtered.filter(emp => {
+        const nameLower = emp.name.toLowerCase();
+        const deptLower = emp.department.toLowerCase();
+        const emailLower = emp.email ? emp.email.toLowerCase() : "";
+        const matchesBase =
+          nameLower.includes(searchLower) ||
+          emailLower.includes(searchLower) ||
+          deptLower.includes(searchLower) ||
+          emp.extension.includes(advancedFilters.searchTerm);
+        const matchesSynonyms = synonyms.some(syn =>
+          nameLower.includes(syn) || emailLower.includes(syn) || deptLower.includes(syn)
+        );
+        return matchesBase || matchesSynonyms;
+      });
     }
 
     // Aplicar filtro de nome específico

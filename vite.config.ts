@@ -94,8 +94,8 @@ export default defineConfig(({ mode }) => {
     },
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true
+        drop_console: false, // Temporariamente habilitado para debug
+        drop_debugger: false // Temporariamente habilitado para debug
       }
     },
     chunkSizeWarningLimit: 300
