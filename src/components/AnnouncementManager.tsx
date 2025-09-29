@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Trash2, Edit, Plus, Upload, X, Save, AlertCircle, Megaphone, Clock, Calendar, Eye, EyeOff } from 'lucide-react';
+import { Trash2, Edit, Plus, Upload, X, Save, AlertCircle, Megaphone, Clock, Calendar, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn, formatDateBR } from '@/lib/utils';
 
@@ -39,10 +39,11 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    priority: 'média' as 'alta' | 'média' | 'baixa'
+    priority: 'medium' as 'high' | 'medium' | 'low'
   });
   
   const { toast } = useToast();
@@ -114,9 +115,9 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
     }
 
     // Reset form
-    setFormData({ title: '', content: '', priority: 'média' });
-    setEditingAnnouncement(null);
-    setIsCreateOpen(false);
+      setFormData({ title: '', content: '', priority: 'medium' });
+      setEditingAnnouncement(null);
+      setIsCreateOpen(false);
   };
 
   const handleEdit = (announcement: Announcement) => {
@@ -150,22 +151,41 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
 
 
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityLabel = (priority: 'high' | 'medium' | 'low') => {
     switch (priority) {
-      case 'alta': return 'hsl(var(--announcement-accent))';
-      case 'média': return 'hsl(var(--directory-accent))';
-      case 'baixa': return 'hsl(var(--lunch-accent))';
-      default: return 'hsl(var(--muted-foreground))';
+      case 'high': return 'Alta';
+      case 'medium': return 'Média';
+      case 'low': return 'Baixa';
+      default: return 'Média';
     }
   };
 
-  const getPriorityIcon = (priority: string) => {
+  const getPriorityColor = (priority: 'high' | 'medium' | 'low') => {
     switch (priority) {
-      case 'alta': return '🔴';
-      case 'média': return '🟡';
-      case 'baixa': return '🟢';
-      default: return '⚪';
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const getPriorityIcon = (priority: 'high' | 'medium' | 'low') => {
+    switch (priority) {
+      case 'high': return '🔴';
+      case 'medium': return '🟡';
+      case 'low': return '🟢';
+      default: return '🟡';
+    }
+  };
+
+  const toggleExpanded = (index: number) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedItems(newExpanded);
   };
 
   const getAnimationClass = (index: number) => {
@@ -230,19 +250,36 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
                   </h3>
                   <Badge 
                     variant="secondary" 
-                    className="text-xs font-semibold px-2 py-1 shadow-sm flex-shrink-0"
-                    style={{ 
-                      backgroundColor: `${getPriorityColor(announcement.priority)}15`,
-                      color: getPriorityColor(announcement.priority),
-                      border: `1px solid ${getPriorityColor(announcement.priority)}40`
-                    }}
+                    className={`text-xs font-semibold px-2 py-1 shadow-sm flex-shrink-0 ${getPriorityColor(announcement.priority)}`}
                   >
-                    {getPriorityIcon(announcement.priority)}
+                    {getPriorityIcon(announcement.priority)} {getPriorityLabel(announcement.priority)}
                   </Badge>
                 </div>
-                <p className="text-muted-foreground leading-relaxed text-sm line-clamp-3">
-                  {announcement.content}
-                </p>
+                <div className="text-muted-foreground leading-relaxed text-sm">
+                  <p className={`whitespace-pre-wrap ${expandedItems.has(index) ? "" : "line-clamp-3"}`}>
+                    {announcement.content}
+                  </p>
+                  {announcement.content.length > 150 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleExpanded(index)}
+                      className="mt-2 h-auto p-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {expandedItems.has(index) ? (
+                        <>
+                          <ChevronUp className="h-3 w-3 mr-1" />
+                          Ler menos
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3 mr-1" />
+                          Continue lendo
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-xs text-muted-foreground font-medium bg-muted/30 px-2 py-1 rounded-lg">
                     {announcement.date}

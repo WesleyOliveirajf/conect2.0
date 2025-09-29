@@ -4,16 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Megaphone, ChevronDown, ChevronUp } from "lucide-react";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { useState } from "react";
-
-type Announcement = {
-  title: string;
-  content: string;
-  priority: 'alta' | 'média' | 'baixa';
-  date: string;
-};
+import { useAnnouncements } from "@/hooks/useAnnouncements";
 
 const Announcements = () => {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const { announcements, isLoading } = useAnnouncements();
   
   const toggleExpanded = (index: number) => {
     const newExpanded = new Set(expandedItems);
@@ -24,17 +19,26 @@ const Announcements = () => {
     }
     setExpandedItems(newExpanded);
   };
-  
-  // Lista de comunicados limpa - todos os comunicados anteriores foram removidos
-  const announcements: Announcement[] = [];
 
   // Mostrar apenas os 4 últimos comunicados
   const recentAnnouncements = announcements.slice(0, 4);
   
   const { getAnimationClass } = useStaggerAnimation(recentAnnouncements.length, 100);
 
-  const getPriorityColor = (priority: string) => {
+  // Função para converter prioridade do banco (inglês) para exibição (português)
+  const getPriorityLabel = (priority: string) => {
     switch (priority) {
+      case 'high': return 'alta';
+      case 'medium': return 'média';
+      case 'low': return 'baixa';
+      default: return 'baixa';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    // Converter para português para manter compatibilidade com as cores existentes
+    const priorityPt = getPriorityLabel(priority);
+    switch (priorityPt) {
       case 'alta': return 'hsl(var(--announcement-accent))';
       case 'média': return 'hsl(var(--directory-accent))';
       case 'baixa': return 'hsl(var(--lunch-accent))';
@@ -43,13 +47,42 @@ const Announcements = () => {
   };
 
   const getPriorityIcon = (priority: string) => {
-    switch (priority) {
+    // Converter para português para manter compatibilidade com os ícones existentes
+    const priorityPt = getPriorityLabel(priority);
+    switch (priorityPt) {
       case 'alta': return '🔴';
       case 'média': return '🟡';
       case 'baixa': return '🟢';
       default: return '⚪';
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card className="gradient-card shadow-card hover:shadow-hover hover:shadow-glow transition-all duration-500 p-8 group animate-slide-up">
+        <div className="flex items-center mb-8">
+          <div className="relative">
+            <div className="p-4 rounded-xl shadow-lg group-hover:scale-105 transition-transform duration-300" 
+                 style={{ 
+                   background: `linear-gradient(135deg, hsl(var(--announcement-accent) / 0.1) 0%, hsl(var(--announcement-accent) / 0.05) 100%)`,
+                   border: `1px solid hsl(var(--announcement-accent) / 0.2)`
+                 }}>
+              <Megaphone className="h-7 w-7" style={{ color: 'hsl(var(--announcement-accent))' }} />
+            </div>
+            <div className="absolute -inset-1 rounded-xl opacity-30 blur-sm" 
+                 style={{ background: `hsl(var(--announcement-accent))` }}></div>
+          </div>
+          <div className="ml-6">
+            <h2 className="text-3xl font-bold text-card-foreground mb-4">Comunicados</h2>
+            <p className="text-muted-foreground">Carregando comunicados...</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="gradient-card shadow-card hover:shadow-hover hover:shadow-glow transition-all duration-500 p-8 group animate-slide-up">
@@ -103,31 +136,31 @@ const Announcements = () => {
                   </Badge>
                 </div>
               </div>
-              <div className="text-muted-foreground leading-relaxed text-sm">
-                <p className={expandedItems.has(index) ? "" : "line-clamp-3"}>
-                  {announcement.content}
-                </p>
-                {announcement.content.length > 100 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleExpanded(index)}
-                    className="mt-2 h-auto p-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {expandedItems.has(index) ? (
-                      <>
-                        <ChevronUp className="h-3 w-3 mr-1" />
-                        Ler menos
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-3 w-3 mr-1" />
-                        Continue lendo
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
+                <div className="text-muted-foreground leading-relaxed text-sm">
+                  <p className={`whitespace-pre-wrap ${expandedItems.has(index) ? "" : "line-clamp-3"}`}>
+                    {announcement.content}
+                  </p>
+                  {announcement.content.length > 150 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleExpanded(index)}
+                      className="mt-2 h-auto p-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {expandedItems.has(index) ? (
+                        <>
+                          <ChevronUp className="h-3 w-3 mr-1" />
+                          Ler menos
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3 mr-1" />
+                          Continue lendo
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
               <div className="flex justify-between items-center pt-2">
                 <span className="text-xs text-muted-foreground font-medium bg-muted/30 px-2 py-1 rounded-lg">
                   {announcement.date}

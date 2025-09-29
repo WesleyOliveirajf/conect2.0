@@ -214,7 +214,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
       id: "",
       title: "",
       content: "",
-      priority: "baixa",
+      priority: "low",
       date: "",
       createdAt: "",
       updatedAt: ""
@@ -339,7 +339,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
                 Prioridade
               </Label>
               <Select
-                value={currentAnnouncement?.priority || "baixa"}
+                value={currentAnnouncement?.priority || "low"}
                 onValueChange={(value) =>
                   setCurrentAnnouncement((prev) =>
                     prev ? { ...prev, priority: value } : null
@@ -350,9 +350,9 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
                 <SelectContent container={dialogContentRef.current ?? undefined}>
-                  <SelectItem value="baixa">Baixa</SelectItem>
-                  <SelectItem value="media">Média</SelectItem>
-                  <SelectItem value="alta">Alta</SelectItem>
+                  <SelectItem value="low">Baixa</SelectItem>
+                  <SelectItem value="medium">Média</SelectItem>
+                  <SelectItem value="high">Alta</SelectItem>
                 </SelectContent>
               </Select>
             </div>

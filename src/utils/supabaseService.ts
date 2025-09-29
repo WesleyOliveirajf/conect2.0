@@ -230,11 +230,18 @@ class SupabaseService {
 
       if (error) throw error;
 
+      // Converter prioridade de português para inglês para a aplicação
+      const reversePriorityMap: Record<string, 'high' | 'medium' | 'low'> = {
+        'alta': 'high',
+        'média': 'medium',
+        'baixa': 'low'
+      };
+
       return data.map(ann => ({
         id: ann.id,
         title: ann.title,
         content: ann.content,
-        priority: ann.priority,
+        priority: reversePriorityMap[ann.priority] || 'medium',
         date: ann.date,
         createdAt: ann.created_at,
         updatedAt: ann.updated_at
@@ -252,13 +259,20 @@ class SupabaseService {
     }
 
     try {
+      // Converter prioridade de inglês para português para o banco
+      const priorityMap: Record<string, 'alta' | 'média' | 'baixa'> = {
+        'high': 'alta',
+        'medium': 'média', 
+        'low': 'baixa'
+      };
+
       const { data, error } = await this.supabase!
         .from('announcements')
         .insert({
           id: crypto.randomUUID(),
           title: announcement.title,
           content: announcement.content,
-          priority: announcement.priority,
+          priority: priorityMap[announcement.priority] || 'média',
           date: announcement.date
         })
         .select()
@@ -266,11 +280,18 @@ class SupabaseService {
 
       if (error) throw error;
 
+      // Converter prioridade de volta para inglês para a aplicação
+      const reversePriorityMap: Record<string, 'high' | 'medium' | 'low'> = {
+        'alta': 'high',
+        'média': 'medium',
+        'baixa': 'low'
+      };
+
       return {
         id: data.id,
         title: data.title,
         content: data.content,
-        priority: data.priority,
+        priority: reversePriorityMap[data.priority] || 'medium',
         date: data.date,
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -288,25 +309,40 @@ class SupabaseService {
     }
 
     try {
+      // Converter prioridade de inglês para português para o banco
+      const priorityMap: Record<string, 'alta' | 'média' | 'baixa'> = {
+        'high': 'alta',
+        'medium': 'média', 
+        'low': 'baixa'
+      };
+
+      const updateData: any = {};
+      if (updates.title) updateData.title = updates.title;
+      if (updates.content) updateData.content = updates.content;
+      if (updates.priority) updateData.priority = priorityMap[updates.priority] || 'média';
+      if (updates.date) updateData.date = updates.date;
+
       const { data, error } = await this.supabase!
         .from('announcements')
-        .update({
-          ...(updates.title && { title: updates.title }),
-          ...(updates.content && { content: updates.content }),
-          ...(updates.priority && { priority: updates.priority }),
-          ...(updates.date && { date: updates.date })
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
 
+      // Converter prioridade de volta para inglês para a aplicação
+      const reversePriorityMap: Record<string, 'high' | 'medium' | 'low'> = {
+        'alta': 'high',
+        'média': 'medium',
+        'baixa': 'low'
+      };
+
       return {
         id: data.id,
         title: data.title,
         content: data.content,
-        priority: data.priority,
+        priority: reversePriorityMap[data.priority] || 'medium',
         date: data.date,
         createdAt: data.created_at,
         updatedAt: data.updated_at
