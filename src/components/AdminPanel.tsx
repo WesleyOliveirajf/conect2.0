@@ -63,7 +63,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const { checkBlocked, recordFailed, recordSuccess } = useRateLimiter();
 
   // Senha administrativa obtida do ambiente (padrão para desenvolvimento)
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'TorpAdmin2025!@#';
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'torp@2026';
 
   const handleLogin = () => {
     // Verificar rate limiting antes de tentar login
