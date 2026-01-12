@@ -281,72 +281,75 @@ const EmployeeDirectory = () => {
   return (
     <div className="space-y-6">
         <Card className="w-full max-w-7xl mx-auto p-6 bg-gradient-to-br from-background via-background to-muted/20 border-border/60 shadow-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20">
-              <Users className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Diretório de Funcionários
-              </h2>
-              <p className="text-sm text-muted-foreground font-medium">
-                {filteredCount === totalEmployees 
-                  ? `${totalEmployees} de ${totalEmployees} funcionários` 
-                  : `${filteredCount} de ${totalEmployees} funcionários`
-                }
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Botão para criar novo funcionário - visível apenas para admins */}
-            {isAdminMode && (
-              <Button 
-                onClick={handleCreateEmployee}
-                size="sm" 
-                className="gap-2 bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Plus className="h-4 w-4" />
-                Novo Funcionário
-              </Button>
-            )}
-            
-            <Dialog open={isAdvancedSearchOpen} onOpenChange={setIsAdvancedSearchOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  Filtros Avançados
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md" aria-describedby="advanced-search-description">
-                <div id="advanced-search-description" className="sr-only">
-                  Filtros avançados para busca de funcionários
+          <div className="flex flex-col gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20">
+                  <Users className="h-6 w-6 text-primary" />
                 </div>
-                <DialogHeader>
-                  <DialogTitle>Filtros Avançados</DialogTitle>
-                </DialogHeader>
-                <AdvancedSearch 
-                  employees={employees}
-                  filters={advancedFilters}
-                  onFiltersChange={setAdvancedFilters}
-                  onClose={() => setIsAdvancedSearchOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
+                <div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    Diretório de Funcionários
+                  </h2>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    {filteredCount === totalEmployees 
+                      ? `${totalEmployees} de ${totalEmployees} funcionários` 
+                      : `${filteredCount} de ${totalEmployees} funcionários`
+                    }
+                  </p>
+                </div>
+              </div>
+              
+              {/* Botão para criar novo funcionário - visível apenas para admins */}
+              {isAdminMode && (
+                <Button 
+                  onClick={handleCreateEmployee}
+                  size="sm" 
+                  className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Plus className="h-4 w-4" />
+                  Novo Funcionário
+                </Button>
+              )}
+            </div>
             
-            {hasFilters && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={clearAllFilters}
-                className="gap-2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-                Limpar
-              </Button>
-            )}
+            {/* Filtros em uma linha separada */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Dialog open={isAdvancedSearchOpen} onOpenChange={setIsAdvancedSearchOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    Filtros Avançados
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md" aria-describedby="advanced-search-description">
+                  <div id="advanced-search-description" className="sr-only">
+                    Filtros avançados para busca de funcionários
+                  </div>
+                  <DialogHeader>
+                    <DialogTitle>Filtros Avançados</DialogTitle>
+                  </DialogHeader>
+                  <AdvancedSearch 
+                    employees={employees}
+                    filters={advancedFilters}
+                    onFiltersChange={setAdvancedFilters}
+                    onClose={() => setIsAdvancedSearchOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+              
+              {hasFilters && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearAllFilters}
+                  className="gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                  Limpar
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
         
         {/* Campo de busca global */}
         <div className="relative max-w-md">
