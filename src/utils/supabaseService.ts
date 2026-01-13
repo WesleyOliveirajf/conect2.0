@@ -51,6 +51,55 @@ class SupabaseService {
   private supabase: SupabaseClient<Database> | null = null;
   private isInitialized = false;
 
+  /**
+   * Converte uma data no formato brasileiro (dd/mm/aa ou dd/mm/yyyy) para o formato ISO (YYYY-MM-DD)
+   * Também aceita strings ISO ou objetos Date
+   */
+  private convertDateToISO(dateStr: string): string {
+    // Se já está no formato ISO (YYYY-MM-DD), retorna como está
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+
+    // Se está no formato ISO completo (com horário), extrai apenas a data
+    if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
+      return dateStr.split('T')[0];
+    }
+
+    // Se está no formato brasileiro dd/mm/aa ou dd/mm/yyyy
+    if (/^\d{2}\/\d{2}\/\d{2,4}$/.test(dateStr)) {
+      const [day, month, yearStr] = dateStr.split('/');
+      
+      // Se o ano tem 2 dígitos, assumir que é 20xx
+      let year = yearStr;
+      if (yearStr.length === 2) {
+        year = `20${yearStr}`;
+      }
+      
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+
+    // Tentar fazer parse como Date
+    try {
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+    } catch (e) {
+      console.error('Erro ao converter data:', e);
+    }
+
+    // Se tudo falhar, retorna a data atual
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   // Inicializar conexão com Supabase
   initialize() {
     // Evitar múltiplas inicializações
@@ -230,18 +279,11 @@ class SupabaseService {
 
       if (error) throw error;
 
-      // Converter prioridade de português para inglês para a aplicação
-      const reversePriorityMap: Record<string, 'high' | 'medium' | 'low'> = {
-        'alta': 'high',
-        'média': 'medium',
-        'baixa': 'low'
-      };
-
       return data.map(ann => ({
         id: ann.id,
         title: ann.title,
         content: ann.content,
-        priority: reversePriorityMap[ann.priority] || 'medium',
+        priority: ann.priority,
         date: ann.date,
         createdAt: ann.created_at,
         updatedAt: ann.updated_at
@@ -259,12 +301,10 @@ class SupabaseService {
     }
 
     try {
-      // Converter prioridade de inglês para português para o banco
-      const priorityMap: Record<string, 'alta' | 'média' | 'baixa'> = {
-        'high': 'alta',
-        'medium': 'média', 
-        'low': 'baixa'
-      };
+      // Converter a data para o formato ISO esperado pelo Supabase
+      const dateISO = this.convertDateToISO(announcement.date);
+
+      console.log('📅 Convertendo data:', announcement.date, '->', dateISO);
 
       const { data, error } = await this.supabase!
         .from('announcements')
@@ -272,26 +312,22 @@ class SupabaseService {
           id: crypto.randomUUID(),
           title: announcement.title,
           content: announcement.content,
-          priority: priorityMap[announcement.priority] || 'média',
-          date: announcement.date
+          priority: announcement.priority,
+          date: dateISO
         })
         .select()
         .single();
 
-      if (error) throw error;
-
-      // Converter prioridade de volta para inglês para a aplicação
-      const reversePriorityMap: Record<string, 'high' | 'medium' | 'low'> = {
-        'alta': 'high',
-        'média': 'medium',
-        'baixa': 'low'
-      };
+      if (error) {
+        console.error('❌ Erro do Supabase ao inserir comunicado:', error);
+        throw error;
+      }
 
       return {
         id: data.id,
         title: data.title,
         content: data.content,
-        priority: reversePriorityMap[data.priority] || 'medium',
+        priority: data.priority,
         date: data.date,
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -309,18 +345,15 @@ class SupabaseService {
     }
 
     try {
-      // Converter prioridade de inglês para português para o banco
-      const priorityMap: Record<string, 'alta' | 'média' | 'baixa'> = {
-        'high': 'alta',
-        'medium': 'média', 
-        'low': 'baixa'
-      };
-
       const updateData: any = {};
       if (updates.title) updateData.title = updates.title;
       if (updates.content) updateData.content = updates.content;
-      if (updates.priority) updateData.priority = priorityMap[updates.priority] || 'média';
-      if (updates.date) updateData.date = updates.date;
+      if (updates.priority) updateData.priority = updates.priority;
+      if (updates.date) {
+        // Converter a data para o formato ISO esperado pelo Supabase
+        updateData.date = this.convertDateToISO(updates.date);
+        console.log('📅 Convertendo data na atualização:', updates.date, '->', updateData.date);
+      }
 
       const { data, error } = await this.supabase!
         .from('announcements')
@@ -329,20 +362,16 @@ class SupabaseService {
         .select()
         .single();
 
-      if (error) throw error;
-
-      // Converter prioridade de volta para inglês para a aplicação
-      const reversePriorityMap: Record<string, 'high' | 'medium' | 'low'> = {
-        'alta': 'high',
-        'média': 'medium',
-        'baixa': 'low'
-      };
+      if (error) {
+        console.error('❌ Erro do Supabase ao atualizar comunicado:', error);
+        throw error;
+      }
 
       return {
         id: data.id,
         title: data.title,
         content: data.content,
-        priority: reversePriorityMap[data.priority] || 'medium',
+        priority: data.priority,
         date: data.date,
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -443,10 +472,13 @@ class SupabaseService {
             title: ann.title,
             content: ann.content,
             priority: ann.priority,
-            date: ann.date
+            date: this.convertDateToISO(ann.date)
           })));
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Erro do Supabase ao sincronizar:', error);
+          throw error;
+        }
         console.log(`✅ ${newAnnouncements.length} comunicados sincronizados`);
       } else {
         console.log('✅ Todos os comunicados já estão sincronizados');
