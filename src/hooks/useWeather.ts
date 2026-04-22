@@ -35,6 +35,7 @@ export function useWeather(): UseWeatherState {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<"climatempo" | "open-meteo">("open-meteo");
+  const cacheKey = "torp_weather_cache_v1";
 
   const loadFromOpenMeteo = useCallback(async () => {
     const url = new URL("https://api.open-meteo.com/v1/forecast");
@@ -91,6 +92,20 @@ export function useWeather(): UseWeatherState {
     }));
     setDays(out);
     setSource("open-meteo");
+    localStorage.setItem(
+      cacheKey,
+      JSON.stringify({
+        current: {
+          time: data.current.time,
+          temp: data.current.temperature_2m,
+          code: data.current.weather_code,
+          humidity: data.current.relative_humidity_2m,
+          windKmh: data.current.wind_speed_10m,
+        },
+        days: out,
+        source: "open-meteo",
+      })
+    );
   }, []);
 
   const load = useCallback(async () => {
@@ -113,6 +128,14 @@ export function useWeather(): UseWeatherState {
         setCurrent(data.current);
         setDays(data.days);
         setSource("climatempo");
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            current: data.current,
+            days: data.days,
+            source: data.source,
+          })
+        );
         setIsLoading(false);
         return;
       }
@@ -122,6 +145,25 @@ export function useWeather(): UseWeatherState {
       try {
         await loadFromOpenMeteo();
       } catch (fallbackError) {
+        const cached = localStorage.getItem(cacheKey);
+
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached) as {
+              current: CurrentWeather;
+              days: DayForecast[];
+              source?: "climatempo" | "open-meteo";
+            };
+            setCurrent(parsed.current);
+            setDays(parsed.days);
+            setSource(parsed.source ?? "open-meteo");
+            setError("Exibindo última previsão salva.");
+            return;
+          } catch {
+            localStorage.removeItem(cacheKey);
+          }
+        }
+
         setError(
           fallbackError instanceof Error
             ? fallbackError.message

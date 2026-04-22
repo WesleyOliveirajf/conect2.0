@@ -31,7 +31,7 @@ const WeatherWidget = () => {
     );
   }
 
-  if (error || !current) {
+  if (!current) {
     return (
       <Card className="border-destructive/30 bg-destructive/5">
         <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -117,15 +117,22 @@ const WeatherWidget = () => {
         </div>
 
         <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">
-            Fonte: {source === "climatempo" ? "Climatempo" : "Open-Meteo"} — atualizado em{" "}
-            {new Date(current.time).toLocaleString("pt-BR", {
-              day: "2-digit",
-              month: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              Fonte: {source === "climatempo" ? "Climatempo" : "Open-Meteo"} — atualizado em{" "}
+              {new Date(current.time).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+            {error && (
+              <p className="mt-1 text-[10px] sm:text-xs text-amber-600 dark:text-amber-400">
+                {error}
+              </p>
+            )}
+          </div>
           <Button
             variant="ghost"
             size="icon"

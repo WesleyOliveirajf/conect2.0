@@ -1,4 +1,6 @@
 const CLIMATEMPO_BASE_URL = "http://apiadvisor.climatempo.com.br";
+const OPEN_METEO_URL =
+  "https://api.open-meteo.com/v1/forecast?latitude=-21.7617&longitude=-43.3388&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=America/Sao_Paulo&forecast_days=5";
 const DEFAULT_LOCALE_ID = "152";
 
 function inferWmoCode(summary: string | undefined): number {
@@ -44,14 +46,52 @@ function normalizeTimestamp(value: unknown): string {
   return new Date().toISOString();
 }
 
+async function fetchOpenMeteoWeather() {
+  const response = await fetch(OPEN_METEO_URL);
+
+  if (!response.ok) {
+    throw new Error(`Falha na Open-Meteo (${response.status})`);
+  }
+
+  const data = await response.json();
+  const dailyCodes = data?.daily?.weather_code ?? data?.daily?.weathercode ?? [];
+
+  return {
+    source: "open-meteo" as const,
+    current: {
+      time: normalizeTimestamp(data?.current?.time),
+      temp: Number(data?.current?.temperature_2m ?? 0),
+      code: Number(data?.current?.weather_code ?? 0),
+      humidity: Number(data?.current?.relative_humidity_2m ?? 0),
+      windKmh: Number(data?.current?.wind_speed_10m ?? 0),
+    },
+    days: Array.isArray(data?.daily?.time)
+      ? data.daily.time.slice(0, 5).map((date: string, index: number) => ({
+          date: normalizeDate(date),
+          min: Number(data?.daily?.temperature_2m_min?.[index] ?? 0),
+          max: Number(data?.daily?.temperature_2m_max?.[index] ?? 0),
+          code: Number(dailyCodes[index] ?? 0),
+        }))
+      : [],
+  };
+}
+
 export default async function handler(_req: any, res: any) {
   const token = process.env.CLIMATEMPO_TOKEN;
   const localeId = process.env.CLIMATEMPO_LOCALE_ID || DEFAULT_LOCALE_ID;
 
   if (!token) {
-    return res.status(503).json({
-      error: "CLIMATEMPO_TOKEN não configurado",
-    });
+    try {
+      const payload = await fetchOpenMeteoWeather();
+      return res.status(200).json(payload);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Erro ao consultar clima";
+
+      return res.status(502).json({
+        error: message,
+      });
+    }
   }
 
   try {
@@ -131,11 +171,18 @@ export default async function handler(_req: any, res: any) {
       days,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Erro ao consultar Climatempo";
+    try {
+      const payload = await fetchOpenMeteoWeather();
+      return res.status(200).json(payload);
+    } catch (fallbackError) {
+      const message =
+        fallbackError instanceof Error
+          ? fallbackError.message
+          : "Erro ao consultar clima";
 
-    return res.status(502).json({
-      error: message,
-    });
+      return res.status(502).json({
+        error: message,
+      });
+    }
   }
 }
