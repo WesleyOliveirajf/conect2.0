@@ -8,7 +8,8 @@ import { type Employee, TERM_SYNONYMS } from "@/hooks/useEmployeeSearch";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSecureSession } from "@/utils/sessionStorage";
-import { useEmployeeManager, type EmployeeFormData } from "@/hooks/useEmployeeManager";
+import { type EmployeeFormData } from "@/hooks/useEmployeeManager";
+import { useEmployeeData } from "@/contexts/EmployeeDataContext";
 import EmployeeForm from "./EmployeeForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
@@ -29,7 +30,7 @@ const EmployeeDirectory = () => {
     getDepartments,
     isLoading,
     isSupabaseConnected
-  } = useEmployeeManager();
+  } = useEmployeeData();
   
   // Debug logs
   useEffect(() => {

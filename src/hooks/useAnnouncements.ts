@@ -238,9 +238,13 @@ export const useAnnouncements = () => {
       return true;
     } catch (error) {
       console.error('❌ Erro ao atualizar comunicado:', error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar o comunicado.";
       toast({
         title: "❌ Erro ao Atualizar",
-        description: "Não foi possível atualizar o comunicado.",
+        description: message,
         variant: "destructive",
       });
       return false;

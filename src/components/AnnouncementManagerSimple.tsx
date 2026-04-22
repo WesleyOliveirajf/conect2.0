@@ -118,6 +118,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
             title: currentAnnouncement.title,
             content: currentAnnouncement.content,
             priority: currentAnnouncement.priority,
+            date: currentAnnouncement.date,
             image: selectedImage || undefined,
           });
         } else {

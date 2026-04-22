@@ -215,14 +215,18 @@ class SupabaseService {
     }
 
     try {
+      // Payload completo evita .update({}) (rejeitado) e trata extensão "0" / email vazio
       const { data, error } = await this.supabase!
         .from('employees')
         .update({
-          ...(updates.name && { name: updates.name }),
-          ...(updates.extension && { extension: updates.extension }),
-          ...(updates.email && { email: updates.email }),
-          ...(updates.department && { department: updates.department }),
-          ...(updates.lunchTime !== undefined && { lunch_time: updates.lunchTime })
+          name: updates.name!,
+          extension: updates.extension!,
+          email: updates.email && updates.email.trim() !== '' ? updates.email : null,
+          department: updates.department!,
+          lunch_time:
+            updates.lunchTime !== undefined && updates.lunchTime !== null && String(updates.lunchTime).trim() !== ''
+              ? updates.lunchTime
+              : null
         })
         .eq('id', id)
         .select()
@@ -345,14 +349,17 @@ class SupabaseService {
     }
 
     try {
-      const updateData: any = {};
-      if (updates.title) updateData.title = updates.title;
-      if (updates.content) updateData.content = updates.content;
-      if (updates.priority) updateData.priority = updates.priority;
-      if (updates.date) {
-        // Converter a data para o formato ISO esperado pelo Supabase
+      const updateData: Record<string, unknown> = {};
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.content !== undefined) updateData.content = updates.content;
+      if (updates.priority !== undefined) updateData.priority = updates.priority;
+      if (updates.date !== undefined && updates.date !== null && updates.date !== '') {
         updateData.date = this.convertDateToISO(updates.date);
         console.log('📅 Convertendo data na atualização:', updates.date, '->', updateData.date);
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        throw new Error('Nenhum campo para atualizar no comunicado');
       }
 
       const { data, error } = await this.supabase!

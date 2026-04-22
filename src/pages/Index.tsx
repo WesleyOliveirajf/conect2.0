@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
+import { EmployeeDataProvider } from "@/contexts/EmployeeDataContext";
 
 // Lazy loading dos componentes pesados
 const EmployeeDirectory = lazy(() => import("@/components/EmployeeDirectory"));
@@ -46,7 +47,8 @@ const Index = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen">
+      <EmployeeDataProvider>
+        <div className="min-h-screen">
         <Header />
         
         <main className="container mx-auto px-4 sm:px-6 pb-12">
@@ -106,7 +108,8 @@ const Index = () => {
         
         {/* Chatbot - Ocultado temporariamente */}
         {/* <Chatbot /> */}
-      </div>
+        </div>
+      </EmployeeDataProvider>
     </ErrorBoundary>
   );
 };

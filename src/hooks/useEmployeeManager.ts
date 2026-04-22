@@ -299,9 +299,13 @@ export const useEmployeeManager = () => {
       return true;
     } catch (error) {
       console.error('❌ Erro ao atualizar funcionário:', error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar o funcionário.";
       toast({
         title: "❌ Erro ao Atualizar",
-        description: "Não foi possível atualizar o funcionário.",
+        description: message,
         variant: "destructive",
       });
       return false;
@@ -426,6 +430,7 @@ export const useEmployeeManager = () => {
   return {
     employees,
     isLoading,
+    isSupabaseConnected,
     addEmployee,
     updateEmployee,
     removeEmployee,

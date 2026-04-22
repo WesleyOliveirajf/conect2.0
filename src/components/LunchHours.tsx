@@ -3,7 +3,7 @@ import { Clock, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
-import { useEmployeeManager } from "@/hooks/useEmployeeManager";
+import { useEmployeeData } from "@/contexts/EmployeeDataContext";
 import { type Employee } from "@/hooks/useEmployeeSearch";
 
 // Função para verificar se um funcionário está em horário de almoço
@@ -27,7 +27,7 @@ const LunchHours = () => {
   const { formatCurrentTime } = useCurrentTime();
 
   // Obter funcionários do sistema principal (sincronizado com o diretório)
-  const { employees } = useEmployeeManager();
+  const { employees } = useEmployeeData();
 
   // Contar quantos funcionários estão em almoço
   const employeesOnLunch = employees.filter(employee => 

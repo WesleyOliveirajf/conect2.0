@@ -15,7 +15,8 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react';
-import { useEmployeeManager, type EmployeeFormData } from '@/hooks/useEmployeeManager';
+import { type EmployeeFormData } from '@/hooks/useEmployeeManager';
+import { useEmployeeData } from '@/contexts/EmployeeDataContext';
 import { type Employee } from '@/hooks/useEmployeeSearch';
 import EmployeeForm from './EmployeeForm';
 import {
@@ -39,7 +40,7 @@ const EmployeeManager = () => {
     exportEmployees,
     importEmployees,
     getDepartments
-  } = useEmployeeManager();
+  } = useEmployeeData();
 
   // Obter departamentos atualizados sempre que employees mudarem
   const currentDepartments = getDepartments();
