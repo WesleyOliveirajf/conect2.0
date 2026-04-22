@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import WeatherWidget from "@/components/WeatherWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { EmployeeDataProvider } from "@/contexts/EmployeeDataContext";
@@ -52,6 +53,9 @@ const Index = () => {
         <Header />
         
         <main className="container mx-auto px-4 sm:px-6 pb-12">
+          <div className="mb-6">
+            <WeatherWidget />
+          </div>
           {/* Painel Administrativo */}
           <div className="mb-6 flex justify-end">
             <Suspense fallback={<SectionLoader />}>
