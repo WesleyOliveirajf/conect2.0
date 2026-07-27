@@ -25,6 +25,7 @@ export interface DatabaseAnnouncement {
   content: string;
   priority: 'alta' | 'média' | 'baixa';
   date: string;
+  image_url?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -48,6 +49,7 @@ export interface Database {
 }
 
 class SupabaseService {
+  private static readonly ANNOUNCEMENT_IMAGES_BUCKET = 'announcement-images';
   private supabase: SupabaseClient<Database> | null = null;
   private isInitialized = false;
 
@@ -289,6 +291,7 @@ class SupabaseService {
         content: ann.content,
         priority: ann.priority,
         date: ann.date,
+        image: ann.image_url || undefined,
         createdAt: ann.created_at,
         updatedAt: ann.updated_at
       }));
@@ -317,7 +320,8 @@ class SupabaseService {
           title: announcement.title,
           content: announcement.content,
           priority: announcement.priority,
-          date: dateISO
+          date: dateISO,
+          image_url: announcement.image || null
         })
         .select()
         .single();
@@ -333,6 +337,7 @@ class SupabaseService {
         content: data.content,
         priority: data.priority,
         date: data.date,
+        image: data.image_url || undefined,
         createdAt: data.created_at,
         updatedAt: data.updated_at
       };
@@ -353,6 +358,7 @@ class SupabaseService {
       if (updates.title !== undefined) updateData.title = updates.title;
       if (updates.content !== undefined) updateData.content = updates.content;
       if (updates.priority !== undefined) updateData.priority = updates.priority;
+      if (updates.image !== undefined) updateData.image_url = updates.image || null;
       if (updates.date !== undefined && updates.date !== null && updates.date !== '') {
         updateData.date = this.convertDateToISO(updates.date);
         console.log('📅 Convertendo data na atualização:', updates.date, '->', updateData.date);
@@ -380,6 +386,7 @@ class SupabaseService {
         content: data.content,
         priority: data.priority,
         date: data.date,
+        image: data.image_url || undefined,
         createdAt: data.created_at,
         updatedAt: data.updated_at
       };
@@ -387,6 +394,45 @@ class SupabaseService {
       console.error('❌ Erro ao atualizar comunicado:', error);
       throw error;
     }
+  }
+
+  async uploadAnnouncementImage(file: File): Promise<string> {
+    if (!this.isConnected()) {
+      throw new Error('Supabase não inicializado');
+    }
+
+    const extensions: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+    };
+    const extension = extensions[file.type];
+
+    if (!extension) {
+      throw new Error('Formato não permitido. Use PNG ou JPG.');
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      throw new Error('A imagem deve ter no máximo 3 MB.');
+    }
+
+    const filePath = `${crypto.randomUUID()}.${extension}`;
+    const { error } = await this.supabase!.storage
+      .from(SupabaseService.ANNOUNCEMENT_IMAGES_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (error) {
+      throw new Error(`Falha ao enviar imagem: ${error.message}`);
+    }
+
+    const { data } = this.supabase!.storage
+      .from(SupabaseService.ANNOUNCEMENT_IMAGES_BUCKET)
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
   }
 
   // Remover comunicado
@@ -479,7 +525,8 @@ class SupabaseService {
             title: ann.title,
             content: ann.content,
             priority: ann.priority,
-            date: this.convertDateToISO(ann.date)
+            date: this.convertDateToISO(ann.date),
+            image_url: ann.image?.startsWith('http') ? ann.image : null
           })));
 
         if (error) {

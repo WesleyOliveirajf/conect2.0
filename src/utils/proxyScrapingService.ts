@@ -220,7 +220,7 @@ class ProxyScrapingService {
    * Extrai meta description
    */
   private extractMetaDescription(html: string): string {
-    const match = html.match(/<meta[^>]*name=["\']description["\'][^>]*content=["\']([^"']*)["\'][^>]*>/i);
+    const match = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i);
     return match ? match[1].trim() : '';
   }
 
@@ -228,7 +228,7 @@ class ProxyScrapingService {
    * Extrai keywords
    */
   private extractKeywords(html: string): string[] {
-    const match = html.match(/<meta[^>]*name=["\']keywords["\'][^>]*content=["\']([^"']*)["\'][^>]*>/i);
+    const match = html.match(/<meta[^>]*name=["']keywords["'][^>]*content=["']([^"']*)["'][^>]*>/i);
     if (match) {
       return match[1].split(',').map(k => k.trim()).filter(k => k.length > 0);
     }

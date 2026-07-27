@@ -280,6 +280,14 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
                     </Button>
                   )}
                 </div>
+                {announcement.image && (
+                  <img
+                    src={announcement.image}
+                    alt={`Imagem da notícia: ${announcement.title}`}
+                    loading="lazy"
+                    className="max-h-80 w-full rounded-lg border border-border/50 bg-muted/20 object-contain"
+                  />
+                )}
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-xs text-muted-foreground font-medium bg-muted/30 px-2 py-1 rounded-lg">
                     {announcement.date}

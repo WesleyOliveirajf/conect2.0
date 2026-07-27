@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import InstallPrompt from "@/components/InstallPrompt";
-import SupportButton from "@/components/SupportButton";
 
 // Lazy loading das páginas
 const Index = lazy(() => import("./pages/Index"));
@@ -53,8 +52,6 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-          {/* Botão flutuante de Suporte TI */}
-          <SupportButton />
         </Router>
       </TooltipProvider>
     </ThemeProvider>

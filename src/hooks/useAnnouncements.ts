@@ -203,6 +203,14 @@ export const useAnnouncements = () => {
     }
   };
 
+  const uploadAnnouncementImage = async (file: File): Promise<string> => {
+    if (!isSupabaseConnected) {
+      throw new Error('Supabase não está conectado');
+    }
+
+    return supabaseService.uploadAnnouncementImage(file);
+  };
+
   // Atualizar comunicado existente
   const updateAnnouncement = async (id: string, updates: Partial<Announcement>): Promise<boolean> => {
     try {
@@ -349,6 +357,7 @@ export const useAnnouncements = () => {
     isSupabaseConnected,
     updateAnnouncements,
     addAnnouncement,
+    uploadAnnouncementImage,
     updateAnnouncement,
     deleteAnnouncement,
     resetAnnouncements,

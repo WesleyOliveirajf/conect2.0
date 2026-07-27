@@ -32,6 +32,7 @@ interface AdminPanelProps {
   onAddAnnouncement?: (announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
   onUpdateAnnouncement?: (id: string, updates: Partial<Announcement>) => Promise<boolean>;
   onDeleteAnnouncement?: (id: string) => Promise<boolean>;
+  onUploadAnnouncementImage?: (file: File) => Promise<string>;
   isSupabaseConnected?: boolean;
   exportData?: () => string | null;
   importData?: (jsonData: string) => boolean;
@@ -45,6 +46,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onAddAnnouncement,
   onUpdateAnnouncement,
   onDeleteAnnouncement,
+  onUploadAnnouncementImage,
   isSupabaseConnected = false,
   exportData,
   importData,
@@ -273,6 +275,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     onAddAnnouncement={onAddAnnouncement}
                     onUpdateAnnouncement={onUpdateAnnouncement}
                     onDeleteAnnouncement={onDeleteAnnouncement}
+                    onUploadImage={onUploadAnnouncementImage}
                     isSupabaseConnected={isSupabaseConnected}
                   />
                 </TabsContent>

@@ -30,8 +30,12 @@ interface AnnouncementManagerSimpleProps {
   onAddAnnouncement?: (announcementData: Omit<Announcement, 'id' | 'createdAt' | 'updatedAt'>) => Promise<boolean>;
   onUpdateAnnouncement?: (id: string, updates: Partial<Announcement>) => Promise<boolean>;
   onDeleteAnnouncement?: (id: string) => Promise<boolean>;
+  onUploadImage?: (file: File) => Promise<string>;
   isSupabaseConnected?: boolean;
 }
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024;
 
 const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
   announcements,
@@ -39,6 +43,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
   onAddAnnouncement,
   onUpdateAnnouncement,
   onDeleteAnnouncement,
+  onUploadImage,
   isSupabaseConnected = false,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -70,12 +75,23 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
         toast({
-          title: "⚠️ Arquivo muito grande",
-          description: "A imagem deve ter no máximo 5MB.",
+          title: "⚠️ Formato não permitido",
+          description: "Selecione uma imagem PNG ou JPG.",
           variant: "destructive",
         });
+        event.target.value = "";
+        return;
+      }
+
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast({
+          title: "⚠️ Arquivo muito grande",
+          description: "A imagem deve ter no máximo 3 MB.",
+          variant: "destructive",
+        });
+        event.target.value = "";
         return;
       }
 
@@ -111,6 +127,15 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
     let success = false;
 
     try {
+      let image = selectedImage || undefined;
+
+      if (imageFile && isSupabaseConnected) {
+        if (!onUploadImage) {
+          throw new Error("Serviço de upload de imagem indisponível");
+        }
+        image = await onUploadImage(imageFile);
+      }
+
       if (currentAnnouncement.id) {
         // Editar comunicado existente
         if (onUpdateAnnouncement) {
@@ -119,13 +144,13 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
             content: currentAnnouncement.content,
             priority: currentAnnouncement.priority,
             date: currentAnnouncement.date,
-            image: selectedImage || undefined,
+            image: image || '',
           });
         } else {
           // Fallback para método antigo
           const updatedAnnouncements = announcements.map((ann) =>
             ann.id === currentAnnouncement.id
-              ? { ...currentAnnouncement, image: selectedImage || undefined, updatedAt: now.toISOString() }
+              ? { ...currentAnnouncement, image, updatedAt: now.toISOString() }
               : ann
           );
           onAnnouncementsChange(updatedAnnouncements);
@@ -142,7 +167,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
             title: currentAnnouncement.title,
             content: currentAnnouncement.content,
             priority: currentAnnouncement.priority,
-            image: selectedImage || undefined,
+            image,
             date: formatDateBR(now)
           });
         } else {
@@ -150,7 +175,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
           const newAnnouncement: Announcement = {
             ...currentAnnouncement,
             id: `ann_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            image: selectedImage || undefined,
+            image,
             createdAt: now.toISOString(),
             updatedAt: now.toISOString(),
             date: formatDateBR(now)
@@ -170,12 +195,21 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
       }
     } catch (error) {
       console.error('❌ Erro ao salvar comunicado:', error);
+      toast({
+        title: "❌ Erro ao salvar",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível salvar o comunicado.",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleEdit = (announcement: Announcement) => {
+    setImageFile(null);
     if (isDialogOpen) {
       setIsDialogOpen(false);
       setTimeout(() => {
@@ -211,6 +245,11 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
   };
 
   const handleCreate = () => {
+    setSelectedImage(null);
+    setImageFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setCurrentAnnouncement({
       id: "",
       title: "",
@@ -239,7 +278,16 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
         <Button onClick={handleCreate}>Novo Comunicado</Button>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            setIsDialogOpen(true);
+          } else {
+            resetForm();
+          }
+        }}
+      >
         <DialogContent
           ref={dialogContentRef}
           className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto bg-gray-800 border-gray-700 text-white"
@@ -298,7 +346,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                     onChange={handleImageSelect}
                     className="hidden"
                   />
@@ -309,7 +357,7 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
                     className="flex items-center gap-2 bg-gray-700 border-gray-600 hover:bg-gray-600"
                   >
                     <ImageIcon size={16} />
-                    Selecionar Imagem
+                    Selecionar PNG ou JPG
                   </Button>
                   {selectedImage && (
                     <Button
@@ -333,6 +381,9 @@ const AnnouncementManagerSimple: React.FC<AnnouncementManagerSimpleProps> = ({
                     />
                   </div>
                 )}
+                <p className="text-xs text-gray-400">
+                  Formatos PNG ou JPG, com no máximo 3 MB.
+                </p>
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
