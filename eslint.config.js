@@ -24,6 +24,9 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      // O projeto integra APIs e dados legados ainda sem tipos completos.
+      // Mantemos o lint útil sem bloquear a migração gradual desses pontos.
+      "@typescript-eslint/no-explicit-any": "off",
     },
   }
 );

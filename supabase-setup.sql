@@ -49,8 +49,33 @@ CREATE TABLE IF NOT EXISTS public.announcements (
     content TEXT NOT NULL,
     priority VARCHAR(20) NOT NULL CHECK (priority IN ('alta', 'média', 'baixa')),
     date DATE NOT NULL,
+    image_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Imagens públicas dos comunicados (PNG/JPG, até 3 MB)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'announcement-images',
+    'announcement-images',
+    true,
+    3145728,
+    ARRAY['image/png', 'image/jpeg']
+)
+ON CONFLICT (id) DO UPDATE SET
+    public = EXCLUDED.public,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "Permitir upload de imagens de comunicados" ON storage.objects;
+CREATE POLICY "Permitir upload de imagens de comunicados"
+ON storage.objects
+FOR INSERT
+TO anon, authenticated
+WITH CHECK (
+    bucket_id = 'announcement-images'
+    AND lower(storage.extension(name)) IN ('png', 'jpg', 'jpeg')
 );
 
 -- Índices para melhor performance

@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WeatherWidget from "@/components/WeatherWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import SupportCard from "@/components/SupportCard";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { EmployeeDataProvider } from "@/contexts/EmployeeDataContext";
 
@@ -27,6 +28,7 @@ const Index = () => {
     addAnnouncement,
     updateAnnouncement,
     deleteAnnouncement,
+    uploadAnnouncementImage,
     isLoading,
     isSupabaseConnected,
     exportData,
@@ -56,6 +58,11 @@ const Index = () => {
           <div className="mb-6">
             <WeatherWidget />
           </div>
+
+          <section className="mb-6" aria-label="Suporte de TI">
+            <SupportCard />
+          </section>
+
           {/* Painel Administrativo */}
           <div className="mb-6 flex justify-end">
             <Suspense fallback={<SectionLoader />}>
@@ -65,6 +72,7 @@ const Index = () => {
                 onAddAnnouncement={addAnnouncement}
                 onUpdateAnnouncement={updateAnnouncement}
                 onDeleteAnnouncement={deleteAnnouncement}
+                onUploadAnnouncementImage={uploadAnnouncementImage}
                 isSupabaseConnected={isSupabaseConnected}
                 exportData={exportData}
                 importData={importData}
@@ -107,6 +115,7 @@ const Index = () => {
               </Suspense>
             </div>
           </ErrorBoundary>
+
         </main>
         <Footer />
         

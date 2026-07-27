@@ -147,7 +147,6 @@ src/
 │   │   ├── tooltip.tsx
 │   │   ├── dropdown-menu.tsx
 │   │   ├── alert-dialog.tsx
-│   │   ├── skeleton.tsx
 │   │   ├── sonner.tsx
 │   │   ├── toast.tsx
 │   │   ├── toaster.tsx
@@ -156,15 +155,14 @@ src/
 │   ├── AdvancedSearch.tsx      # Busca avançada de funcionários
 │   ├── AnnouncementManager.tsx # Gerenciador de comunicados
 │   ├── AnnouncementManagerSimple.tsx
-│   ├── Announcements.tsx       # Exibição de comunicados
 │   ├── EmployeeDirectory.tsx   # Diretório de funcionários
 │   ├── EmployeeForm.tsx        # Formulário de funcionários
 │   ├── EmployeeManager.tsx     # Gerenciador de funcionários
-│   ├── EmployeeSearch.tsx      # Busca de funcionários
 │   ├── ErrorBoundary.tsx       # Tratamento de erros
 │   ├── Header.tsx              # Cabeçalho da aplicação
 │   ├── InstallPrompt.tsx       # Prompt de instalação PWA
 │   ├── LunchHours.tsx          # Horários de almoço
+│   ├── SupportCard.tsx         # Acesso ao suporte de TI
 │   ├── ThemeProvider.tsx       # Provedor de tema
 │   └── ThemeToggle.tsx         # Alternador de tema
 ├── hooks/
@@ -173,11 +171,8 @@ src/
 │   ├── useDebounce.ts          # Hook para debounce
 │   ├── useEmployeeManager.ts   # Hook para gerenciar funcionários
 │   ├── useEmployeeSearch.ts    # Hook para busca de funcionários
-│   ├── useExport.ts            # Hook para exportação
-│   ├── useLoading.ts           # Hook para estados de loading
 │   ├── usePWA.ts               # Hook para funcionalidades PWA
 │   ├── useStaggerAnimation.ts  # Hook para animações
-│   ├── use-mobile.ts           # Hook para detecção mobile
 │   └── use-toast.ts            # Hook para notificações
 ├── lib/
 │   └── utils.ts                # Utilitários gerais (cn, etc.)
@@ -199,7 +194,6 @@ src/
 
 ### 🏢 Diretório de Funcionários
 - **EmployeeDirectory**: Componente principal que exibe a lista de funcionários
-- **EmployeeSearch**: Sistema de busca com filtros por departamento
 - **AdvancedSearch**: Busca avançada com múltiplos filtros
 - **LunchHours**: Indicador visual de horários de almoço
 
@@ -210,8 +204,7 @@ src/
 - **useEmployeeSearch**: Hook para funcionalidades de busca
 
 ### 📢 Sistema de Comunicados
-- **Announcements**: Exibição de comunicados na página principal
-- **AnnouncementManager**: Interface administrativa para gerenciar comunicados
+- **AnnouncementManager**: Exibição e gerenciamento de comunicados
 - **AnnouncementManagerSimple**: Versão simplificada do gerenciador
 - **useAnnouncements**: Hook para gerenciar estado dos comunicados
 - Sistema focado na exibição e gerenciamento de comunicados sem funcionalidades de pesquisa
@@ -234,9 +227,6 @@ src/
 - **useDebounce**: Otimização de performance em buscas
 - **useStaggerAnimation**: Animações escalonadas
 - **useCurrentTime**: Gerenciamento de tempo em tempo real
-- **useExport**: Exportação de dados em múltiplos formatos
-- **useLoading**: Estados de carregamento
-- **use-mobile**: Detecção de dispositivos móveis
 
 ## 🌐 Deploy no GitHub Pages
 

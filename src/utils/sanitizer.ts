@@ -35,6 +35,14 @@ const SANITIZE_CONFIGS = {
   }
 };
 
+const removeControlCharacters = (value: string): string =>
+  Array.from(value)
+    .filter((character) => {
+      const code = character.charCodeAt(0);
+      return !((code >= 0 && code <= 31) || (code >= 127 && code <= 159));
+    })
+    .join('');
+
 export class InputSanitizer {
   /**
    * Sanitiza texto simples removendo todas as tags HTML
@@ -45,7 +53,7 @@ export class InputSanitizer {
     }
 
     // Remove caracteres de controle
-    let cleaned = input.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    let cleaned = removeControlCharacters(input);
     
     // Sanitiza com DOMPurify
     cleaned = DOMPurify.sanitize(cleaned, SANITIZE_CONFIGS.text);
@@ -66,7 +74,7 @@ export class InputSanitizer {
     }
 
     // Remove caracteres de controle
-    let cleaned = input.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    let cleaned = removeControlCharacters(input);
     
     // Sanitiza permitindo tags básicas
     cleaned = DOMPurify.sanitize(cleaned, SANITIZE_CONFIGS.richText);
@@ -192,7 +200,7 @@ export class InputSanitizer {
     const sanitized = {} as T;
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
         
         if (typeof value === 'string') {

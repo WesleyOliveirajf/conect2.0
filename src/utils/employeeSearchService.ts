@@ -290,12 +290,13 @@ class EmployeeSearchService {
         }
         break;
 
-      case 'department':
+      case 'department': {
         const dept = Object.keys(result.departmentCounts)[0];
         summary = `${result.totalCount} funcionários no departamento de ${dept}`;
         break;
+      }
 
-      case 'name':
+      case 'name': {
         if (result.totalCount === 1) {
           const emp = result.employees[0];
           summary = `Funcionário encontrado: ${emp.name} - ${emp.department} (Ramal: ${emp.extension})`;
@@ -303,6 +304,7 @@ class EmployeeSearchService {
           summary = `${result.totalCount} funcionários encontrados com nome similar`;
         }
         break;
+      }
 
       case 'extension':
         if (result.totalCount === 1) {
