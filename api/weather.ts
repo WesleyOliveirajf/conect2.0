@@ -77,6 +77,8 @@ async function fetchOpenMeteoWeather() {
 }
 
 export default async function handler(_req: any, res: any) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+
   const token = process.env.CLIMATEMPO_TOKEN;
   const localeId = process.env.CLIMATEMPO_LOCALE_ID || DEFAULT_LOCALE_ID;
 
