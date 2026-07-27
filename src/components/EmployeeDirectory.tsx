@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Users, Phone, Mail, Copy, MessageSquare, ExternalLink, ChevronDown, ChevronUp, X, Clock, Search, Edit, Trash2, Plus, Shield } from "lucide-react";
+import { Users, Phone, Mail, Copy, MessageSquare, ExternalLink, ChevronDown, ChevronUp, X, Clock, Search, Edit, Trash2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
@@ -24,7 +24,6 @@ const EmployeeDirectory = () => {
   const { isAuthenticated } = useSecureSession();
   const { 
     employees, 
-    addEmployee, 
     updateEmployee, 
     deleteEmployee, 
     getDepartments,
@@ -50,11 +49,6 @@ const EmployeeDirectory = () => {
   const isAdminMode = isAuthenticated();
   
   // Funções para manipulação de funcionários (modo admin)
-  const handleCreateEmployee = () => {
-    setEditingEmployee(null);
-    setIsFormOpen(true);
-  };
-  
   const handleEditEmployee = (employee: Employee) => {
     setEditingEmployee(employee);
     setIsFormOpen(true);
@@ -76,8 +70,6 @@ const EmployeeDirectory = () => {
   const handleFormSubmit = async (formData: EmployeeFormData) => {
     if (editingEmployee) {
       await updateEmployee(editingEmployee.id!, formData);
-    } else {
-      await addEmployee(formData);
     }
     setIsFormOpen(false);
     setEditingEmployee(null);
@@ -301,17 +293,6 @@ const EmployeeDirectory = () => {
                 </div>
               </div>
               
-              {/* Botão para criar novo funcionário - visível apenas para admins */}
-              {isAdminMode && (
-                <Button 
-                  onClick={handleCreateEmployee}
-                  size="sm" 
-                  className="gap-2 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Plus className="h-4 w-4" />
-                  Novo Funcionário
-                </Button>
-              )}
             </div>
             
             {/* Filtros em uma linha separada */}
@@ -596,7 +577,7 @@ const EmployeeDirectory = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {isAdminMode && <Shield className="h-5 w-5 text-primary" />}
-              {editingEmployee ? 'Editar Funcionário' : 'Novo Funcionário'}
+              Editar Funcionário
             </DialogTitle>
           </DialogHeader>
           <EmployeeForm

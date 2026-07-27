@@ -89,6 +89,43 @@ CREATE TRIGGER update_announcements_updated_at
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ========================================
+-- TABELA DE DÚVIDAS PARA RH/DP
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS public.hr_questions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(120) NOT NULL CHECK (char_length(trim(name)) BETWEEN 2 AND 120),
+    question TEXT NOT NULL CHECK (char_length(trim(question)) > 0),
+    status VARCHAR(20) NOT NULL DEFAULT 'nova'
+        CHECK (status IN ('nova', 'visualizada', 'resolvida')),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_hr_questions_created_at
+    ON public.hr_questions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_hr_questions_status
+    ON public.hr_questions(status);
+
+DROP TRIGGER IF EXISTS update_hr_questions_updated_at ON public.hr_questions;
+CREATE TRIGGER update_hr_questions_updated_at
+    BEFORE UPDATE ON public.hr_questions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+ALTER TABLE public.hr_questions ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.hr_questions FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.hr_questions TO anon, authenticated;
+GRANT ALL ON TABLE public.hr_questions TO service_role;
+
+DROP POLICY IF EXISTS "Permitir operações em hr_questions" ON public.hr_questions;
+CREATE POLICY "Permitir operações em hr_questions"
+ON public.hr_questions
+FOR ALL
+TO anon, authenticated
+USING (true)
+WITH CHECK (true);
+
+-- ========================================
 -- POLÍTICAS DE SEGURANÇA (RLS)
 -- ========================================
 
@@ -169,7 +206,7 @@ SELECT
     tableowner
 FROM pg_tables 
 WHERE schemaname = 'public' 
-AND tablename IN ('employees', 'announcements');
+AND tablename IN ('employees', 'announcements', 'hr_questions');
 
 -- Verificar contagem de registros
 SELECT 
@@ -214,6 +251,13 @@ announcements:
 - content (TEXT)
 - priority (ENUM: alta, média, baixa)
 - date (DATE)
+- created_at, updated_at (TIMESTAMP)
+
+hr_questions:
+- id (UUID, PK)
+- name (VARCHAR)
+- question (TEXT)
+- status (nova, visualizada, resolvida)
 - created_at, updated_at (TIMESTAMP)
 
 RECURSOS INCLUÍDOS:
