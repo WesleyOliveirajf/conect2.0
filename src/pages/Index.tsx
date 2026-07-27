@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import WeatherWidget from "@/components/WeatherWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SupportCard from "@/components/SupportCard";
+import HrContactCard from "@/components/HrContactCard";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { EmployeeDataProvider } from "@/contexts/EmployeeDataContext";
 
@@ -59,29 +60,14 @@ const Index = () => {
             <WeatherWidget />
           </div>
 
-          <section className="mb-6" aria-label="Suporte de TI">
+          <section
+            className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2"
+            aria-label="Canais de atendimento"
+          >
             <SupportCard />
+            <HrContactCard />
           </section>
 
-          {/* Painel Administrativo */}
-          <div className="mb-6 flex justify-end">
-            <Suspense fallback={<SectionLoader />}>
-              <AdminPanel
-                announcements={announcements}
-                onAnnouncementsChange={updateAnnouncements}
-                onAddAnnouncement={addAnnouncement}
-                onUpdateAnnouncement={updateAnnouncement}
-                onDeleteAnnouncement={deleteAnnouncement}
-                onUploadAnnouncementImage={uploadAnnouncementImage}
-                isSupabaseConnected={isSupabaseConnected}
-                exportData={exportData}
-                importData={importData}
-                restoreFromBackup={restoreFromBackup}
-                resetAnnouncements={resetAnnouncements}
-              />
-            </Suspense>
-          </div>
-          
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
             <ErrorBoundary>
               <div className="xl:col-span-2 order-1 animate-slide-in-left">
@@ -115,6 +101,25 @@ const Index = () => {
               </Suspense>
             </div>
           </ErrorBoundary>
+
+          {/* Acesso administrativo no final do conteúdo */}
+          <div className="mt-6 flex justify-end">
+            <Suspense fallback={<SectionLoader />}>
+              <AdminPanel
+                announcements={announcements}
+                onAnnouncementsChange={updateAnnouncements}
+                onAddAnnouncement={addAnnouncement}
+                onUpdateAnnouncement={updateAnnouncement}
+                onDeleteAnnouncement={deleteAnnouncement}
+                onUploadAnnouncementImage={uploadAnnouncementImage}
+                isSupabaseConnected={isSupabaseConnected}
+                exportData={exportData}
+                importData={importData}
+                restoreFromBackup={restoreFromBackup}
+                resetAnnouncements={resetAnnouncements}
+              />
+            </Suspense>
+          </div>
 
         </main>
         <Footer />

@@ -30,6 +30,15 @@ export interface DatabaseAnnouncement {
   updated_at?: string;
 }
 
+export interface DatabaseHrQuestion {
+  id: string;
+  name: string;
+  question: string;
+  status: 'nova' | 'visualizada' | 'resolvida';
+  created_at: string;
+  updated_at: string;
+}
+
 // Definição do schema do banco
 export interface Database {
   public: {
@@ -43,6 +52,14 @@ export interface Database {
         Row: DatabaseAnnouncement;
         Insert: Omit<DatabaseAnnouncement, 'created_at' | 'updated_at'>;
         Update: Partial<Omit<DatabaseAnnouncement, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      hr_questions: {
+        Row: DatabaseHrQuestion;
+        Insert: Pick<DatabaseHrQuestion, 'name' | 'question'> & {
+          id?: string;
+          status?: DatabaseHrQuestion['status'];
+        };
+        Update: Partial<Pick<DatabaseHrQuestion, 'status'>>;
       };
     };
   };
@@ -541,6 +558,44 @@ class SupabaseService {
       console.error('❌ Erro ao sincronizar comunicados:', error);
       throw error;
     }
+  }
+
+  // === OPERAÇÕES DE RH/DP ===
+
+  async addHrQuestion(name: string, question: string): Promise<void> {
+    if (!this.initialize()) throw new Error('Supabase não inicializado');
+
+    const { error } = await this.supabase!
+      .from('hr_questions')
+      .insert({ name, question });
+
+    if (error) throw error;
+  }
+
+  async getHrQuestions(): Promise<DatabaseHrQuestion[]> {
+    if (!this.initialize()) throw new Error('Supabase não inicializado');
+
+    const { data, error } = await this.supabase!
+      .from('hr_questions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updateHrQuestionStatus(
+    id: string,
+    status: DatabaseHrQuestion['status'],
+  ): Promise<void> {
+    if (!this.initialize()) throw new Error('Supabase não inicializado');
+
+    const { error } = await this.supabase!
+      .from('hr_questions')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) throw error;
   }
 }
 

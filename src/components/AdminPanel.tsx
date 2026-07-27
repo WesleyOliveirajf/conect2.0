@@ -17,7 +17,8 @@ import {
   Plus,
   Edit,
   Trash2,
-  Activity
+  Activity,
+  MessageSquareText
 } from 'lucide-react';
 import { Announcement } from '@/hooks/useAnnouncements';
 import { useSecureSession } from '@/utils/sessionStorage';
@@ -25,6 +26,7 @@ import { useRateLimiter } from '@/utils/rateLimiter';
 import EmployeeManager from './EmployeeManager';
 import AnnouncementManagerSimple from './AnnouncementManagerSimple';
 import ServiceStatus from './ServiceStatus';
+import HrQuestionsManager from './HrQuestionsManager';
 
 interface AdminPanelProps {
   announcements: Announcement[];
@@ -64,7 +66,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const { isAuthenticated, login, logout, getRemainingTime } = useSecureSession();
   const { checkBlocked, recordFailed, recordSuccess } = useRateLimiter();
 
-  // Senha administrativa obtida do ambiente (padrão para desenvolvimento)
+  // Mantém o fluxo administrativo existente.
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'torp@2026';
 
   const handleLogin = () => {
@@ -252,7 +254,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </DialogHeader>
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-4">
                 <TabsTrigger value="announcements" className="gap-2">
                   <Megaphone className="h-4 w-4" />
                   Comunicados
@@ -264,6 +266,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <TabsTrigger value="status" className="gap-2">
                   <Activity className="h-4 w-4" />
                   Status
+                </TabsTrigger>
+                <TabsTrigger value="hr-questions" className="gap-2">
+                  <MessageSquareText className="h-4 w-4" />
+                  RH/DP
                 </TabsTrigger>
               </TabsList>
               
@@ -286,6 +292,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 
                 <TabsContent value="status" className="space-y-4">
                   <ServiceStatus />
+                </TabsContent>
+
+                <TabsContent value="hr-questions" className="space-y-4">
+                  <HrQuestionsManager />
                 </TabsContent>
               </div>
             </Tabs>

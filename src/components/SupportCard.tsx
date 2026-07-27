@@ -11,8 +11,8 @@ import {
 const SUPPORT_URL = "https://chamado2026torp.lovable.app/";
 
 const SupportCard = () => (
-  <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-card to-primary/5">
-    <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
+  <Card className="h-full overflow-hidden border-primary/20 bg-gradient-to-br from-card to-primary/5">
+    <div className="flex h-full flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
       <CardHeader className="flex-row items-start gap-4 space-y-0 p-0">
         <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
