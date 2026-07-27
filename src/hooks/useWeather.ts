@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 /** Juiz de Fora, MG (centro aproximado) */
 const LAT = -21.7617;
 const LON = -43.3388;
 const TIMEZONE = "America/Sao_Paulo";
+const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 export interface DayForecast {
   date: string;
@@ -35,6 +36,7 @@ export function useWeather(): UseWeatherState {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<"climatempo" | "open-meteo">("open-meteo");
+  const hasLoaded = useRef(false);
   const cacheKey = "torp_weather_cache_v1";
 
   const loadFromOpenMeteo = useCallback(async () => {
@@ -49,7 +51,7 @@ export function useWeather(): UseWeatherState {
     url.searchParams.set("timezone", TIMEZONE);
     url.searchParams.set("forecast_days", "5");
 
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), { cache: "no-store" });
     if (!res.ok) {
       throw new Error(`Falha na API (${res.status})`);
     }
@@ -110,10 +112,12 @@ export function useWeather(): UseWeatherState {
 
   const load = useCallback(async () => {
     setError(null);
-    setIsLoading(true);
+    if (!hasLoaded.current) setIsLoading(true);
 
     try {
-      const climatempoRes = await fetch("/api/weather");
+      const climatempoRes = await fetch(`/api/weather?t=${Date.now()}`, {
+        cache: "no-store",
+      });
       if (climatempoRes.ok) {
         const data = (await climatempoRes.json()) as {
           current: CurrentWeather;
@@ -173,12 +177,28 @@ export function useWeather(): UseWeatherState {
         setDays([]);
       }
     } finally {
+      hasLoaded.current = true;
       setIsLoading(false);
     }
   }, [loadFromOpenMeteo]);
 
   useEffect(() => {
-    load();
+    void load();
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") void load();
+    }, AUTO_REFRESH_INTERVAL_MS);
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [load]);
 
   return { current, days, isLoading, error, source, refetch: load };
