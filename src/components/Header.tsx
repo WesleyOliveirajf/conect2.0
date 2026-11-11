@@ -1,28 +1,26 @@
 import { ThemeToggle } from "./ThemeToggle";
+import WeatherWidget from "./WeatherWidget";
 
 const Header = () => {
   return (
-    <header className="w-full py-8 sm:py-12 mb-8 sm:mb-12 relative overflow-hidden">
-      <div className="absolute inset-0 gradient-primary opacity-5"></div>
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        <div className="absolute top-0 right-0 z-20 animate-slide-in-right">
-          <ThemeToggle />
-        </div>
-        <div className="text-center animate-bounce-in">
-          <div className="inline-block mb-4 sm:mb-6">
-            <div className="relative">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-transparent bg-clip-text torp-text-brand mb-2 tracking-tight">
-                Torp Connect
-              </h1>
-              <span className="torp-tech-text">40 ANOS</span>
-              <div className="absolute -inset-2 gradient-primary opacity-10 blur-xl rounded-full"></div>
-            </div>
+    <header className="w-full border-b border-border/60 bg-background/95">
+      <div className="container mx-auto px-4 sm:px-6 py-5 sm:py-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight torp-text-brand">Torp Connect</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Comunicados, pessoas e atendimento em um só lugar</p>
           </div>
-          <p className="text-muted-foreground text-lg sm:text-xl font-medium px-4">
-            Um espaço para unir, informar e transformar
-          </p>
-                                <div className="w-16 sm:w-24 h-1 torp-gradient-brand mx-auto mt-3 sm:mt-4 rounded-full"></div>
+          <div className="flex items-center gap-2">
+            <WeatherWidget variant="header" />
+            <ThemeToggle />
+          </div>
         </div>
+        <nav aria-label="Navegação principal" className="mt-5 flex gap-2 overflow-x-auto pb-1">
+          <a href="#atendimento" className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Suporte e RH</a>
+          <a href="#comunicados" className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Comunicados</a>
+          <a href="#pessoas" className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Diretório</a>
+          <a href="#almoco" className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Horários de almoço</a>
+        </nav>
       </div>
     </header>
   );

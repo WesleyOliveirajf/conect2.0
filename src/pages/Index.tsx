@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import WeatherWidget from "@/components/WeatherWidget";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SupportCard from "@/components/SupportCard";
 import HrContactCard from "@/components/HrContactCard";
@@ -55,22 +54,15 @@ const Index = () => {
         <div className="min-h-screen">
         <Header />
         
-        <main className="container mx-auto px-4 sm:px-6 pb-12">
-          <div className="mb-6">
-            <WeatherWidget />
-          </div>
-
-          <section
-            className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2"
-            aria-label="Canais de atendimento"
-          >
+        <main id="conteudo" className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 pb-12 space-y-10">
+          <section id="atendimento" aria-label="Canais de atendimento" className="scroll-mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
             <SupportCard />
             <HrContactCard />
           </section>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
             <ErrorBoundary>
-              <div className="xl:col-span-2 order-1 animate-slide-in-left">
+              <section id="comunicados" aria-label="Comunicados" className="xl:col-span-2 scroll-mt-6">
                 <Suspense fallback={<SectionLoader />}>
                   <AnnouncementManager
                     announcements={announcements}
@@ -81,29 +73,28 @@ const Index = () => {
                     resetAnnouncements={resetAnnouncements}
                   />
                 </Suspense>
-              </div>
+              </section>
             </ErrorBoundary>
 
             <ErrorBoundary>
-              <div className="xl:col-span-1 order-2 animate-scale-in" style={{ animationDelay: '0.1s' }}>
+              <section id="pessoas" aria-label="Diretório de pessoas" className="xl:col-span-1 scroll-mt-6">
                 <Suspense fallback={<SectionLoader />}>
                   <EmployeeDirectory />
                 </Suspense>
-              </div>
+              </section>
             </ErrorBoundary>
           </div>
-          
-          {/* Seção de Horários de Almoço - Movida para o final */}
-          <ErrorBoundary>
-            <div className="mt-8 animate-fade-in">
+
+          <section id="almoco" aria-label="Pessoas em almoço" className="scroll-mt-6">
+            <ErrorBoundary>
               <Suspense fallback={<SectionLoader />}>
                 <LunchHours />
               </Suspense>
-            </div>
-          </ErrorBoundary>
+            </ErrorBoundary>
+          </section>
 
           {/* Acesso administrativo no final do conteúdo */}
-          <div className="mt-6 flex justify-end">
+          <div className="flex justify-end">
             <Suspense fallback={<SectionLoader />}>
               <AdminPanel
                 announcements={announcements}

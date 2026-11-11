@@ -12,10 +12,17 @@ function formatShortWeekday(iso: string) {
   return d.toLocaleDateString("pt-BR", { weekday: "short" });
 }
 
-const WeatherWidget = () => {
+interface WeatherWidgetProps {
+  variant?: "card" | "header";
+}
+
+const WeatherWidget = ({ variant = "card" }: WeatherWidgetProps) => {
   const { current, days, isLoading, error, source, refetch } = useWeather();
 
   if (isLoading) {
+    if (variant === "header") {
+      return <div className="h-9 w-28 animate-pulse rounded-md bg-muted" aria-label="Carregando previsão do tempo" />;
+    }
     return (
       <Card className="border-dashed">
         <CardContent className="p-4 sm:p-5">
@@ -32,6 +39,15 @@ const WeatherWidget = () => {
   }
 
   if (!current) {
+    if (variant === "header") {
+      return (
+        <Button variant="outline" size="sm" onClick={refetch} title={error ?? "Previsão indisponível"}>
+          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Tentar clima novamente</span>
+          <span className="sr-only sm:hidden">Tentar clima novamente</span>
+        </Button>
+      );
+    }
     return (
       <Card className="border-destructive/30 bg-destructive/5">
         <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -49,8 +65,53 @@ const WeatherWidget = () => {
 
   const { Icon, label } = getWmoInfo(current.code);
 
+  if (variant === "header") {
+    return (
+      <details className="relative z-30">
+        <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-border/60 bg-card px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+          <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+          <span className="font-semibold tabular-nums">{Math.round(current.temp)}°C</span>
+          <span className="hidden text-muted-foreground sm:inline">Juiz de Fora</span>
+          <span className="sr-only">Abrir previsão do tempo</span>
+        </summary>
+        <div className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 text-sm shadow-lg">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold">{cityLabel}</p>
+              <p className="text-muted-foreground">{label} · {Math.round(current.temp)}°C</p>
+            </div>
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={refetch} aria-label="Atualizar previsão">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Umidade {Math.round(current.humidity)}% · Vento {Math.round(current.windKmh)} km/h
+          </p>
+          {days.length > 0 && (
+            <div className="mt-3 space-y-1 border-t border-border/60 pt-3" aria-label="Próximos dias">
+              {days.slice(0, 5).map((day) => {
+                const DayIcon = getWmoInfo(day.code).Icon;
+                return (
+                  <div key={day.date} className="flex items-center gap-2 rounded-md px-1 py-1">
+                    <span className="w-12 capitalize text-muted-foreground">{formatShortWeekday(day.date)}</span>
+                    <DayIcon className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <span className="ml-auto tabular-nums">{Math.round(day.min)}° / {Math.round(day.max)}°</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <p className="mt-3 border-t border-border/60 pt-2 text-xs text-muted-foreground">
+            Fonte: {source === "climatempo" ? "Climatempo" : "Open-Meteo"}
+            {error && <span className="block text-amber-600 dark:text-amber-400">{error}</span>}
+          </p>
+        </div>
+      </details>
+    );
+  }
+
   return (
-    <Card className="overflow-hidden border-border/60 bg-gradient-to-br from-card to-muted/20">
+    <Card className="border-border/60">
       <CardContent className="p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-6">
           <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">

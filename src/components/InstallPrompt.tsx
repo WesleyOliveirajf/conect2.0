@@ -100,7 +100,7 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
               </div>
               <div className="flex-1">
                 <p className="font-medium text-sm">
-                  Instale o TORP Huddle Space
+                  Instale o Torp Connect
                 </p>
                 <p className="text-xs text-blue-100">
                   Acesse rapidamente e use offline
@@ -185,7 +185,7 @@ export const InstallPrompt: React.FC<InstallPromptProps> = ({
             </div>
             <div className="flex-1">
               <h3 className="font-medium text-gray-900 text-sm">
-                Instalar TORP Huddle Space
+                Instalar Torp Connect
               </h3>
               <p className="text-xs text-gray-600 mt-1">
                 Acesse rapidamente e funcione offline

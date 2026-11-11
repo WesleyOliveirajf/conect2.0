@@ -39,7 +39,7 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [showAllAnnouncements, setShowAllAnnouncements] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -178,25 +178,21 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
     }
   };
 
-  const toggleExpanded = (index: number) => {
+  const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
     } else {
-      newExpanded.add(index);
+      newExpanded.add(id);
     }
     setExpandedItems(newExpanded);
   };
 
-  const getAnimationClass = (index: number) => {
-    return `animate-slide-up-delay-${index}`;
-  };
-
   return (
-    <Card className="gradient-card shadow-card hover:shadow-hover hover:shadow-glow transition-all duration-500 p-8 group animate-slide-up">
+    <Card className="border-border/60 p-5 sm:p-6">
       <div className="space-y-6">
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg" style={{ 
               background: `linear-gradient(135deg, hsl(var(--announcement-accent) / 0.1) 0%, hsl(var(--announcement-accent) / 0.05) 100%)`,
@@ -205,7 +201,7 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
               <Megaphone className="h-6 w-6" style={{ color: 'hsl(var(--announcement-accent))' }} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-card-foreground mb-4">Comunicados Torp</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold text-card-foreground">Comunicados</h2>
               <p className="text-sm text-muted-foreground">
                 {announcements.length} comunicado{announcements.length !== 1 ? 's' : ''} ativo{announcements.length !== 1 ? 's' : ''}
               </p>
@@ -214,15 +210,17 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
           
           <div className="flex items-center gap-2">
             {/* Controles de Visualização */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAllAnnouncements(!showAllAnnouncements)}
-              className="gap-1 px-2 py-1 text-xs"
-            >
-              {showAllAnnouncements ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-              {showAllAnnouncements ? 'Menos' : 'Todos'}
-            </Button>
+            {announcements.length > 4 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAllAnnouncements(!showAllAnnouncements)}
+                className="shrink-0"
+              >
+                {showAllAnnouncements ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {showAllAnnouncements ? 'Mostrar menos comunicados' : 'Ver todos os comunicados'}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -240,12 +238,12 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
             </p>
           </div>
         ) : (
-          (showAllAnnouncements ? announcements : announcements.slice(0, 4)).map((announcement, index) => (
+          (showAllAnnouncements ? announcements : announcements.slice(0, 4)).map((announcement) => (
             <div key={announcement.id} 
-                 className={`group/item p-5 rounded-xl gradient-secondary hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-border ${getAnimationClass(index)}`}>
+                 className="p-4 sm:p-5 rounded-lg bg-muted/25 border border-border/50">
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-start gap-3">
-                  <h3 className="font-bold text-secondary-foreground text-lg group-hover/item:text-foreground transition-colors line-clamp-2">
+                  <h3 className="font-semibold text-foreground text-base sm:text-lg line-clamp-2">
                     {announcement.title}
                   </h3>
                   <Badge 
@@ -256,17 +254,17 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
                   </Badge>
                 </div>
                 <div className="text-muted-foreground leading-relaxed text-sm">
-                  <p className={`whitespace-pre-wrap ${expandedItems.has(index) ? "" : "line-clamp-3"}`}>
+                  <p className={`whitespace-pre-wrap ${expandedItems.has(announcement.id) ? "" : "line-clamp-3"}`}>
                     {announcement.content}
                   </p>
                   {announcement.content.length > 150 && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => toggleExpanded(index)}
+                      onClick={() => toggleExpanded(announcement.id)}
                       className="mt-2 h-auto p-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {expandedItems.has(index) ? (
+                      {expandedItems.has(announcement.id) ? (
                         <>
                           <ChevronUp className="h-3 w-3 mr-1" />
                           Ler menos

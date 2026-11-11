@@ -59,7 +59,7 @@ const HrContactCard = () => {
   };
 
   return (
-    <Card className="h-full overflow-hidden border-primary/20 bg-gradient-to-br from-card to-primary/5">
+    <Card className="h-full border-border/60">
       <div className="flex h-full flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
         <CardHeader className="flex-row items-start gap-4 space-y-0 p-0">
           <div
@@ -70,7 +70,7 @@ const HrContactCard = () => {
           </div>
 
           <div className="space-y-1.5">
-            <CardTitle className="text-xl">Falar com RH/DP</CardTitle>
+            <CardTitle className="text-xl">Atendimento de RH e DP</CardTitle>
             <CardDescription className="max-w-2xl text-sm sm:text-base">
               Envie sua dúvida diretamente para a equipe de Recursos Humanos.
             </CardDescription>
@@ -81,13 +81,13 @@ const HrContactCard = () => {
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button size="lg" className="w-full sm:w-auto">
-                Enviar dúvida
+                Enviar solicitação
                 <MessageSquareText aria-hidden="true" />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle>Falar com RH/DP</DialogTitle>
+                <DialogTitle>Atendimento de RH e DP</DialogTitle>
                 <DialogDescription>
                   Informe seu nome e descreva sua dúvida. A equipe responderá pelos
                   canais internos.
@@ -144,7 +144,7 @@ const HrContactCard = () => {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     <Send aria-hidden="true" />
-                    {isSubmitting ? "Enviando..." : "Enviar dúvida"}
+                    {isSubmitting ? "Enviando..." : "Enviar solicitação"}
                   </Button>
                 </div>
               </form>

@@ -1,5 +1,3 @@
-import { vercelConfig } from '../../vercel-config.js';
-
 interface Document {
   id: string;
   content: string;
@@ -30,9 +28,9 @@ class VectorStoreService {
   private config: any;
 
   constructor() {
-    // Detectar ambiente Vercel
-    this.isVercelEnvironment = vercelConfig.isVercel();
-    this.config = vercelConfig.getConfig();
+    // Em builds de produção, os dados ficam apenas em memória.
+    this.isVercelEnvironment = import.meta.env.PROD;
+    this.config = {};
     
     console.log('[VectorStore] Ambiente detectado:', {
       isVercel: this.isVercelEnvironment,

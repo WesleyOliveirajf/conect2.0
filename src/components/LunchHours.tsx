@@ -48,7 +48,7 @@ const LunchHours = () => {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <Card className="gradient-card shadow-card hover:shadow-hover hover:shadow-glow transition-all duration-500 p-6 group animate-slide-up">
+      <Card className="border-border/60 p-5 sm:p-6">
         <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="relative">

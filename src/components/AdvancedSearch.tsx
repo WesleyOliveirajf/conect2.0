@@ -66,7 +66,21 @@ export function AdvancedSearch({ employees, filters, onFiltersChange, onClose }:
 
   const exportResults = () => {
     const filtered = applyCurrentFilters();
-    console.log('Exportar resultados:', filtered);
+    const escapeCell = (value: string) => {
+      const safeValue = /^[=+@\-\t\r]/.test(value) ? `'${value}` : value;
+      return `"${safeValue.replace(/"/g, '""')}"`;
+    };
+    const rows = [
+      ['Nome', 'Departamento', 'Ramal', 'Email'],
+      ...filtered.map((employee) => [employee.name, employee.department, employee.extension, employee.email || ''])
+    ];
+    const csv = '\uFEFF' + rows.map((row) => row.map((value) => escapeCell(String(value))).join(';')).join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'funcionarios.csv';
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const applyCurrentFilters = () => {

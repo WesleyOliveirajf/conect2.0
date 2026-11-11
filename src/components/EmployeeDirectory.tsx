@@ -273,16 +273,16 @@ const EmployeeDirectory = () => {
 
   return (
     <div className="space-y-6">
-        <Card className="w-full max-w-7xl mx-auto p-6 bg-gradient-to-br from-background via-background to-muted/20 border-border/60 shadow-xl">
+        <Card className="w-full p-5 sm:p-6 border-border/60">
           <div className="flex flex-col gap-4 mb-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20">
+                <div className="p-2 rounded-lg bg-primary/10">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                    Diretório de Funcionários
+                  <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+                    Pessoas
                   </h2>
                   <p className="text-sm text-muted-foreground font-medium">
                     {filteredCount === totalEmployees 
@@ -300,7 +300,7 @@ const EmployeeDirectory = () => {
               <Dialog open={isAdvancedSearchOpen} onOpenChange={setIsAdvancedSearchOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
-                    Filtros Avançados
+                     Filtrar diretório
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md" aria-describedby="advanced-search-description">
@@ -308,7 +308,7 @@ const EmployeeDirectory = () => {
                     Filtros avançados para busca de funcionários
                   </div>
                   <DialogHeader>
-                    <DialogTitle>Filtros Avançados</DialogTitle>
+                     <DialogTitle>Filtros do diretório</DialogTitle>
                   </DialogHeader>
                   <AdvancedSearch 
                     employees={employees}
@@ -327,7 +327,7 @@ const EmployeeDirectory = () => {
                   className="gap-2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
-                  Limpar
+                   Limpar filtros
                 </Button>
               )}
             </div>
@@ -380,14 +380,14 @@ const EmployeeDirectory = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
-              {displayedEmployees.map((employee, index) => (
-                <Card 
-                   key={employee.id}
-                   className={`group/item p-4 sm:p-5 bg-gradient-to-br from-card via-card/95 to-muted/20 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/40 transition-all duration-500 hover:scale-[1.03] hover:-translate-y-1 min-h-[180px] sm:min-h-[200px] border-border/40 backdrop-blur-sm ${getAnimationClass(index)} ${
-                     employee.lunchTime && isEmployeeOnLunch(employee.lunchTime) ? 'ring-2 ring-green-500/40 bg-gradient-to-br from-green-50/10 via-card to-emerald-50/10 dark:from-green-950/20 dark:via-card dark:to-emerald-950/20' : ''
-                   }`}
-                 >
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+              {displayedEmployees.map((employee) => (
+                <Card
+                  key={employee.id}
+                  className={`p-4 border-border/60 ${
+                    employee.lunchTime && isEmployeeOnLunch(employee.lunchTime) ? 'border-green-500/50' : ''
+                  }`}
+                >
                   <div className="space-y-3 sm:space-y-4">
                      <div className="flex items-start gap-2 sm:gap-3">
                        <div 
@@ -412,33 +412,33 @@ const EmployeeDirectory = () => {
                              variant="outline"
                              size="sm"
                              onClick={() => window.open(`tel:${employee.extension}`)}
-                             className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-background/50 hover:bg-background border-border/60"
+                             className="h-9 w-9 p-0"
                              title={`Ligar para ${employee.name}`}
                              aria-label={`Ligar para ${employee.name} no ramal ${employee.extension}`}
                            >
-                             <Phone className="h-2.5 w-2.5 sm:h-3 sm:w-3" aria-hidden="true" />
+                              <Phone className="h-4 w-4" aria-hidden="true" />
                            </Button>
                            {employee.email && (
                              <>
-                               <Button
+                          <Button
                                  variant="outline"
                                  size="sm"
                                  onClick={() => openTeams(employee.email!, employee.name)}
-                                 className="h-7 w-7 p-0 bg-background/50 hover:bg-background border-border/60"
+                            className="h-9 w-9 p-0"
                                  title={`Abrir Teams com ${employee.name}`}
                                  aria-label={`Abrir conversa no Teams com ${employee.name}`}
                                >
-                                 <MessageSquare className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600" aria-hidden="true" />
+                                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
                                </Button>
                                <Button
                                  variant="outline"
                                  size="sm"
                                  onClick={() => window.open(`mailto:${employee.email}`, '_blank', 'noopener,noreferrer')}
-                                 className="h-7 w-7 p-0 bg-background/50 hover:bg-background border-border/60"
+                                  className="h-9 w-9 p-0"
                                  title={`Enviar email para ${employee.name}`}
                                  aria-label={`Enviar email para ${employee.name} (${employee.email})`}
                                >
-                                 <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3" aria-hidden="true" />
+                                  <Mail className="h-4 w-4" aria-hidden="true" />
                                </Button>
                              </>
                            )}
@@ -450,7 +450,7 @@ const EmployeeDirectory = () => {
                                  variant="outline"
                                  size="sm"
                                  onClick={() => handleEditEmployee(employee)}
-                                 className="h-7 w-7 p-0 bg-gradient-to-br from-yellow-50 to-yellow-100/50 hover:from-yellow-100 hover:to-yellow-200/50 border-yellow-200 hover:border-yellow-300 shadow-sm hover:shadow-md transition-all duration-200"
+                                  className="h-9 w-9 p-0"
                                  title={`Editar ${employee.name}`}
                                  aria-label={`Editar dados de ${employee.name}`}
                                >
@@ -460,7 +460,7 @@ const EmployeeDirectory = () => {
                                  variant="outline"
                                  size="sm"
                                  onClick={() => handleDeleteEmployee(employee)}
-                                 className="h-7 w-7 p-0 bg-gradient-to-br from-red-50 to-red-100/50 hover:from-red-100 hover:to-red-200/50 border-red-200 hover:border-red-300 shadow-sm hover:shadow-md transition-all duration-200"
+                                  className="h-9 w-9 p-0"
                                  title={`Excluir ${employee.name}`}
                                  aria-label={`Excluir ${employee.name} do diretório`}
                                >
@@ -472,7 +472,11 @@ const EmployeeDirectory = () => {
                        </div>
                      </div>
                     
-                    <div className="space-y-2 sm:space-y-3">
+                    <details className="group/details border-t border-border/50 pt-3">
+                      <summary className="cursor-pointer rounded-sm text-sm font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        Ramal {employee.extension} · Contato e horário
+                      </summary>
+                      <div className="mt-3 space-y-2">
                        <div className="flex items-center gap-2 sm:gap-3 bg-muted/30 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg">
                          <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: 'hsl(var(--directory-accent))' }} />
                          <div className="flex-1">
@@ -481,11 +485,11 @@ const EmployeeDirectory = () => {
                              {employee.extension}
                            </span>
                          </div>
-                         <Button
+                          <Button
                            variant="ghost"
                            size="sm"
                            onClick={() => copyToClipboard(employee.extension, "ramal")}
-                           className="h-5 w-5 sm:h-6 sm:w-6 p-0 hover:bg-muted/50"
+                            className="h-9 w-9 p-0"
                            title="Copiar ramal"
                            aria-label={`Copiar ramal ${employee.extension} de ${employee.name}`}
                          >
@@ -510,7 +514,7 @@ const EmployeeDirectory = () => {
                              variant="ghost"
                              size="sm"
                              onClick={() => copyToClipboard(employee.email!, "email")}
-                             className="h-6 w-6 p-0 hover:bg-muted/50"
+                              className="h-9 w-9 p-0"
                              title="Copiar email"
                              aria-label={`Copiar email ${employee.email} de ${employee.name}`}
                            >
@@ -537,8 +541,9 @@ const EmployeeDirectory = () => {
                            )}
                          </div>
                        )}
-                     </div>
-                  </div>
+                      </div>
+                    </details>
+                   </div>
                 </Card>
               ))}
             </div>
@@ -549,17 +554,17 @@ const EmployeeDirectory = () => {
                 <Button
                   variant="outline"
                   onClick={() => setShowAll(!showAll)}
-                  className="gap-2 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border-primary/20 hover:border-primary/30 text-primary hover:text-primary font-medium px-6 py-2 rounded-full transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
+                  className="gap-2"
                 >
                   {showAll ? (
                     <>
                       <ChevronUp className="h-4 w-4" />
-                      Ver Menos
+                      Mostrar menos
                     </>
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      Ver Todos ({finalFilteredEmployees.length})
+                      Ver todas as pessoas ({finalFilteredEmployees.length})
                     </>
                   )}
                 </Button>

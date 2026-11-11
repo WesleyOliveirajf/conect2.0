@@ -11,7 +11,7 @@ import {
 const SUPPORT_URL = "https://chamado2026torp.lovable.app/";
 
 const SupportCard = () => (
-  <Card className="h-full overflow-hidden border-primary/20 bg-gradient-to-br from-card to-primary/5">
+  <Card className="h-full border-border/60">
     <div className="flex h-full flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
       <CardHeader className="flex-row items-start gap-4 space-y-0 p-0">
         <div
@@ -22,7 +22,7 @@ const SupportCard = () => (
         </div>
 
         <div className="space-y-1.5">
-          <CardTitle className="text-xl">Precisa de ajuda?</CardTitle>
+            <CardTitle className="text-xl">Suporte de TI</CardTitle>
           <CardDescription className="max-w-2xl text-sm sm:text-base">
             Abra um chamado para solicitar suporte à equipe de TI.
           </CardDescription>
@@ -32,7 +32,7 @@ const SupportCard = () => (
       <CardContent className="p-0">
         <Button asChild size="lg" className="w-full sm:w-auto">
           <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer">
-            Abrir chamado
+            Solicitar suporte
             <ExternalLink aria-hidden="true" />
           </a>
         </Button>
