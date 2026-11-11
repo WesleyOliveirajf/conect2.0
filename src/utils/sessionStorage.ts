@@ -11,6 +11,8 @@ const SESSION_KEY = 'torp_admin_session';
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos em milliseconds
 
 export class SecureSessionManager {
+  private static activeSessionId: string | null = null;
+
   /**
    * Gera um ID de sessão único
    */
@@ -32,6 +34,7 @@ export class SecureSessionManager {
     };
 
     setEncryptedStorage(SESSION_KEY, session);
+    this.activeSessionId = session.sessionId;
     console.log('🔐 Nova sessão administrativa criada');
     return session;
   }
@@ -43,7 +46,7 @@ export class SecureSessionManager {
     try {
       const session = getEncryptedStorage<AdminSession>(SESSION_KEY);
       
-      if (!session || !session.isAuthenticated) {
+      if (!session || !session.isAuthenticated || session.sessionId !== this.activeSessionId) {
         return false;
       }
 
@@ -88,7 +91,8 @@ export class SecureSessionManager {
    */
   static getSessionInfo(): AdminSession | null {
     try {
-      return getEncryptedStorage<AdminSession>(SESSION_KEY);
+      const session = getEncryptedStorage<AdminSession>(SESSION_KEY);
+      return session?.sessionId === this.activeSessionId ? session : null;
     } catch (error) {
       console.error('❌ Erro ao obter informações da sessão:', error);
       return null;
@@ -99,6 +103,7 @@ export class SecureSessionManager {
    * Destrói a sessão atual
    */
   static destroySession(): void {
+    this.activeSessionId = null;
     removeEncryptedStorage(SESSION_KEY);
     console.log('🔓 Sessão administrativa destruída');
   }
@@ -109,7 +114,7 @@ export class SecureSessionManager {
   static getRemainingTime(): number {
     try {
       const session = getEncryptedStorage<AdminSession>(SESSION_KEY);
-      if (!session) return 0;
+      if (!session || session.sessionId !== this.activeSessionId) return 0;
 
       const lastActivity = new Date(session.lastActivity);
       const now = new Date();

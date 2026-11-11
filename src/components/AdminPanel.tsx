@@ -42,6 +42,27 @@ interface AdminPanelProps {
   resetAnnouncements?: () => boolean;
 }
 
+const ADMIN_PASSWORD_SALT = 'a6d764256981b01f0bdccb4c101788d0';
+const ADMIN_PASSWORD_HASH = 'c943ccf45e54a200c34fa7f9f002699f3a42199b36fffd86aa57b726b7a09bff';
+
+const verifyAdminPassword = async (password: string): Promise<boolean> => {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+  const salt = new Uint8Array(ADMIN_PASSWORD_SALT.match(/.{2}/g)!.map((byte) => parseInt(byte, 16)));
+  const derived = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 210000, hash: 'SHA-256' },
+    key,
+    256
+  );
+  const hash = Array.from(new Uint8Array(derived), (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return hash === ADMIN_PASSWORD_HASH;
+};
+
 const AdminPanel: React.FC<AdminPanelProps> = ({
   announcements,
   onAnnouncementsChange,
@@ -61,15 +82,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('announcements');
   const [remainingTime, setRemainingTime] = useState(0);
+  const [isVerifying, setIsVerifying] = useState(false);
   
   const { toast } = useToast();
   const { isAuthenticated, login, logout, getRemainingTime } = useSecureSession();
   const { checkBlocked, recordFailed, recordSuccess } = useRateLimiter();
 
-  // Mantém o fluxo administrativo existente.
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'torp@2026';
-
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (isVerifying) return;
     // Verificar rate limiting antes de tentar login
     const rateLimitCheck = checkBlocked();
     if (rateLimitCheck.blocked) {
@@ -82,7 +102,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       return;
     }
 
-    if (password === ADMIN_PASSWORD) {
+    setIsVerifying(true);
+    let isValid = false;
+    try {
+      isValid = await verifyAdminPassword(password);
+    } catch (error) {
+      console.error('Falha ao verificar a senha administrativa:', error);
+      toast({
+        title: 'Não foi possível validar o acesso',
+        description: 'Tente novamente.',
+        variant: 'destructive',
+      });
+      return;
+    } finally {
+      setIsVerifying(false);
+    }
+
+    if (isValid) {
       recordSuccess(); // Limpa rate limiting
       login();
       setIsLoginOpen(false);
@@ -205,9 +241,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleLogin} className="flex-1 gap-1 px-2 py-1 text-xs">
+                <Button onClick={handleLogin} disabled={isVerifying || !password} className="flex-1 gap-1 px-2 py-1 text-xs">
                   <Lock className="h-3 w-3" />
-                  Entrar
+                  {isVerifying ? 'Verificando...' : 'Entrar'}
                 </Button>
                 <Button
                   variant="outline"
@@ -229,7 +265,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
     return (
       <div className="flex items-center gap-2">
-        <Dialog open={isAdminPanelOpen} onOpenChange={setIsAdminPanelOpen}>
+        <Dialog open={isAdminPanelOpen} onOpenChange={(open) => {
+            if (open) setIsAdminPanelOpen(true);
+            else handleLogout();
+          }}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="gap-1 px-2 py-1 text-xs">
               <Settings className="h-3 w-3" />

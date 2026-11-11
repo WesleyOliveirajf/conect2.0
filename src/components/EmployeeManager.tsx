@@ -66,8 +66,6 @@ const EmployeeManager = () => {
           toast.success('Funcionário atualizado com sucesso!');
           setShowForm(false);
           setEditingEmployee(null);
-        } else {
-          toast.error('Erro ao atualizar funcionário.');
         }
         return success;
       } else {

@@ -10,7 +10,7 @@ import { type Employee } from '@/hooks/useEmployeeSearch';
 
 interface EmployeeFormProps {
   employee?: Employee;
-  onSave: (data: EmployeeFormData) => boolean;
+  onSave: (data: EmployeeFormData) => Promise<boolean>;
   onCancel: () => void;
   departments: string[];
   isEditing?: boolean;
@@ -101,7 +101,7 @@ const EmployeeForm = ({ employee, onSave, onCancel, departments, isEditing = fal
     setIsSubmitting(true);
     
     try {
-      const success = onSave(formData);
+      const success = await onSave(formData);
       if (success) {
         // Limpar formulário se for adição
         if (!isEditing) {

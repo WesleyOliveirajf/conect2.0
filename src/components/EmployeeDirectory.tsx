@@ -67,12 +67,14 @@ const EmployeeDirectory = () => {
     }
   };
   
-  const handleFormSubmit = async (formData: EmployeeFormData) => {
-    if (editingEmployee) {
-      await updateEmployee(editingEmployee.id!, formData);
+  const handleFormSubmit = async (formData: EmployeeFormData): Promise<boolean> => {
+    if (!editingEmployee) return false;
+    const success = await updateEmployee(editingEmployee.id!, formData);
+    if (success) {
+      setIsFormOpen(false);
+      setEditingEmployee(null);
     }
-    setIsFormOpen(false);
-    setEditingEmployee(null);
+    return success;
   };
   
   const handleFormCancel = () => {
@@ -574,7 +576,10 @@ const EmployeeDirectory = () => {
         )}
 
       {/* Modal do formulário de funcionário */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        if (open) setIsFormOpen(true);
+        else handleFormCancel();
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="employee-form-description">
           <div id="employee-form-description" className="sr-only">
             Formulário para adicionar ou editar informações de funcionário
@@ -586,9 +591,11 @@ const EmployeeDirectory = () => {
             </DialogTitle>
           </DialogHeader>
           <EmployeeForm
-            employee={editingEmployee}
-            onSubmit={handleFormSubmit}
+            employee={editingEmployee || undefined}
+            onSave={handleFormSubmit}
             onCancel={handleFormCancel}
+            departments={getDepartments()}
+            isEditing
           />
         </DialogContent>
       </Dialog>
