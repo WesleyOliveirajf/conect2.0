@@ -160,6 +160,37 @@ class SupabaseService {
     return this.isInitialized && this.supabase !== null;
   }
 
+  // === AUTENTICAÇÃO ADMIN (Supabase Auth) ===
+
+  /**
+   * Faz login com e-mail/senha e só aceita usuários com app_metadata.role = 'admin'.
+   * app_metadata só pode ser alterado pelo servidor (painel/SQL), nunca pelo usuário.
+   * A autorização real das escritas é feita pelas políticas RLS (migration 000006).
+   */
+  async signInAdmin(email: string, password: string): Promise<{ ok: boolean; error?: string }> {
+    if (!this.isConnected() || !this.supabase) {
+      return { ok: false, error: 'Supabase não inicializado' };
+    }
+
+    const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.user) {
+      return { ok: false, error: 'Credenciais inválidas' };
+    }
+
+    if (data.user.app_metadata?.role !== 'admin') {
+      await this.supabase.auth.signOut();
+      return { ok: false, error: 'Usuário sem permissão de administrador' };
+    }
+
+    return { ok: true };
+  }
+
+  async signOutAdmin(): Promise<void> {
+    if (this.supabase) {
+      await this.supabase.auth.signOut();
+    }
+  }
+
   // === OPERAÇÕES DE FUNCIONÁRIOS ===
 
   // Buscar todos os funcionários

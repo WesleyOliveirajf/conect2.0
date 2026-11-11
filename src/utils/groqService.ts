@@ -46,8 +46,8 @@ interface ServiceStatus {
 import employeeSearchService from './employeeSearchService';
 
 class GroqService {
-  private apiKey: string;
-  private baseUrl = 'https://api.groq.com/openai/v1';
+  // Chamadas passam pelo proxy serverless (api/chat.ts); a chave Groq fica só no servidor
+  private chatEndpoint = '/api/chat';
   private model = 'llama-3.1-8b-instant';
   private ragService: import('./ragService').default | null = null;
   private ragEnabled = false;
@@ -55,10 +55,6 @@ class GroqService {
   private lastSuccessfulConnection: Date | null = null;
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_GROQ_API_KEY || '';
-    if (!this.apiKey) {
-      console.warn('VITE_GROQ_API_KEY não encontrada nas variáveis de ambiente');
-    }
   }
 
   // Método público para inicializar RAG
@@ -103,10 +99,6 @@ class GroqService {
   async sendMessage(
     messages: GroqMessage[]
   ): Promise<GroqServiceResponse> {
-    if (!this.apiKey) {
-      throw new Error('API Key da Groq não configurada. Verifique suas variáveis de ambiente.');
-    }
-
     try {
       const userMessage = messages[messages.length - 1]?.content || '';
       console.log('[GroqService] Processando mensagem:', userMessage.substring(0, 100) + '...');
@@ -198,10 +190,9 @@ ${ragContext ? `CONTEXTO RELEVANTE:\n${ragContext}` : 'Nenhum contexto encontrad
         queryType: isEmployeeQuery ? 'employees' : 'web'
       });
 
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(this.chatEndpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -259,18 +250,12 @@ ${ragContext ? `CONTEXTO RELEVANTE:\n${ragContext}` : 'Nenhum contexto encontrad
 
 
   async testConnection(): Promise<boolean> {
-    if (!this.apiKey) {
-      console.warn('[GroqService] API Key não configurada');
-      return false;
-    }
-
     try {
       console.log('[GroqService] Testando conexão...');
       
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(this.chatEndpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -316,11 +301,10 @@ ${ragContext ? `CONTEXTO RELEVANTE:\n${ragContext}` : 'Nenhum contexto encontrad
       try {
         console.log(`[GroqService] Testando modelo alternativo: ${model}`);
         
-        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        const response = await fetch(this.chatEndpoint, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
+              'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             model: model,
@@ -349,9 +333,9 @@ ${ragContext ? `CONTEXTO RELEVANTE:\n${ragContext}` : 'Nenhum contexto encontrad
 
   getStatus(): ServiceStatus {
     return {
-      isConfigured: !!this.apiKey,
+      isConfigured: true,
       currentModel: this.model,
-      hasApiKey: !!this.apiKey,
+      hasApiKey: true,
       ragEnabled: this.ragEnabled,
       lastError: this.lastError,
       lastSuccessfulConnection: this.lastSuccessfulConnection

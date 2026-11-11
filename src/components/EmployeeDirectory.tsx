@@ -386,7 +386,7 @@ const EmployeeDirectory = () => {
               {displayedEmployees.map((employee) => (
                 <Card
                   key={employee.id}
-                  className={`p-4 border-border/60 ${
+                  className={`p-4 border-border/60 hover:border-green-500/50 ${
                     employee.lunchTime && isEmployeeOnLunch(employee.lunchTime) ? 'border-green-500/50' : ''
                   }`}
                 >

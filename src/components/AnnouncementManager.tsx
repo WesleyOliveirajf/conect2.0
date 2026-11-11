@@ -240,7 +240,7 @@ const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
         ) : (
           (showAllAnnouncements ? announcements : announcements.slice(0, 4)).map((announcement) => (
             <div key={announcement.id} 
-                 className="p-4 sm:p-5 rounded-lg bg-muted/25 border border-border/50">
+                 className="p-4 sm:p-5 rounded-lg bg-muted/25 border border-border/50 hover:border-green-500/50">
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-start gap-3">
                   <h3 className="font-semibold text-foreground text-base sm:text-lg line-clamp-2">
